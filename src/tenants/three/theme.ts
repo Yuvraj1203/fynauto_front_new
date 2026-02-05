@@ -1,0 +1,61 @@
+export const ThreeColors = {
+  light: {
+    /* PRIMARY */
+    primary50: "#dfedfd",
+    primary100: "#b3d4fa",
+    primary200: "#86bbf7",
+    primary300: "#59a1f4",
+    primary400: "#2d88f1",
+    primary500: "#006fee",
+    primary600: "#005cc4",
+    primary700: "#00489b",
+    primary800: "#003571",
+    primary900: "#002147",
+    primary: "#006fee",
+    onPrimary: "#fff",
+
+    /* SECONDARY */
+    secondary50: "#eee4f8",
+    secondary100: "#d7bfef",
+    secondary200: "#bf99e5",
+    secondary300: "#a773db",
+    secondary400: "#904ed2",
+    secondary500: "#7828c8",
+    secondary600: "#6321a5",
+    secondary700: "#4e1a82",
+    secondary800: "#39135f",
+    secondary900: "#240c3c",
+    secondary: "#7828c8",
+    onSecondary: "#fff",
+  },
+
+  dark: {
+    /* PRIMARY */
+    primary50: "#002147",
+    primary100: "#003571",
+    primary200: "#00489b",
+    primary300: "#005cc4",
+    primary400: "#006fee",
+    primary500: "#2d88f1",
+    primary600: "#59a1f4",
+    primary700: "#86bbf7",
+    primary800: "#b3d4fa",
+    primary900: "#dfedfd",
+    primary: "#006fee",
+    onPrimary: "#fff",
+
+    /* SECONDARY */
+    secondary50: "#240c3c",
+    secondary100: "#39135f",
+    secondary200: "#4e1a82",
+    secondary300: "#6321a5",
+    secondary400: "#7828c8",
+    secondary500: "#904ed2",
+    secondary600: "#a773db",
+    secondary700: "#bf99e5",
+    secondary800: "#d7bfef",
+    secondary900: "#eee4f8",
+    secondary: "#7828c8",
+    onSecondary: "#fff",
+  },
+};

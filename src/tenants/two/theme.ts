@@ -1,0 +1,61 @@
+export const TwoColors = {
+  light: {
+    /* PRIMARY */
+    primary50: "#ffdfea",
+    primary100: "#ffb3cc",
+    primary200: "#ff86ae",
+    primary300: "#ff5991",
+    primary400: "#ff2d73",
+    primary500: "#ff0055",
+    primary600: "#d20046",
+    primary700: "#a60037",
+    primary800: "#790028",
+    primary900: "#4d001a",
+    primary: "#ff0055",
+    onPrimary: "#fff",
+
+    /* SECONDARY */
+    secondary50: "#fcfcfe",
+    secondary100: "#f8f8fe",
+    secondary200: "#f3f3fd",
+    secondary300: "#efeffc",
+    secondary400: "#eaeafb",
+    secondary500: "#e6e6fa",
+    secondary600: "#bebece",
+    secondary700: "#9696a3",
+    secondary800: "#6d6d77",
+    secondary900: "#45454b",
+    secondary: "#e6e6fa",
+    onSecondary: "#474747",
+  },
+
+  dark: {
+    /* PRIMARY */
+    primary50: "#4d001a",
+    primary100: "#790028",
+    primary200: "#a60037",
+    primary300: "#d20046",
+    primary400: "#ff0055",
+    primary500: "#ff2d73",
+    primary600: "#ff5991",
+    primary700: "#ff86ae",
+    primary800: "#ffb3cc",
+    primary900: "#ffdfea",
+    primary: "#ff0055",
+    onPrimary: "#fff",
+
+    /* SECONDARY */
+    secondary50: "#45454b",
+    secondary100: "#6d6d77",
+    secondary200: "#9696a3",
+    secondary300: "#bebece",
+    secondary400: "#e6e6fa",
+    secondary500: "#eaeafb",
+    secondary600: "#efeffc",
+    secondary700: "#f3f3fd",
+    secondary800: "#f8f8fe",
+    secondary900: "#fcfcfe",
+    secondary: "#e6e6fa",
+    onSecondary: "#474747",
+  },
+};
