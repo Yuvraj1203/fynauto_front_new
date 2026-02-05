@@ -1,3 +1,4 @@
+"use client";
 import { CustomSize } from "@/services/types";
 import { Radio, RadioGroup } from "@heroui/react";
 import { CheckboxOrientation } from "../customCheckboxGroup/customCheckboxGroup";

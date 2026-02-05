@@ -32,9 +32,7 @@ export default async function RootLayout({
       >
         {tenantData.isColor && <style>{tenantData.color}</style>}
         <ServerProvider>
-          <ClientProvider authInfo={tenantData.tenantInfo}>
-            {children}
-          </ClientProvider>
+          <ClientProvider>{children}</ClientProvider>
         </ServerProvider>
       </body>
     </html>

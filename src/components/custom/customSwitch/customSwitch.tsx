@@ -1,3 +1,4 @@
+"use client";
 import { CustomColor, CustomSize } from "@/services/types";
 import { Switch } from "@heroui/react";
 import { ReactNode } from "react";

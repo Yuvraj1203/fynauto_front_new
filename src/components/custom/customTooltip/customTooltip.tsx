@@ -1,3 +1,5 @@
+"use client";
+
 import { CustomColor } from "@/services/types";
 import { Tooltip } from "@heroui/react";
 import { ReactNode } from "react";

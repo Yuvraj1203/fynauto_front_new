@@ -24,6 +24,8 @@ import {
   IoWarning,
 } from "react-icons/io5";
 import {
+  LuArrowRight,
+  LuBuilding2,
   LuClipboardList,
   LuCopy,
   LuDot,
@@ -35,6 +37,7 @@ import {
   LuMessageSquare,
   LuRefreshCcw,
   LuSave,
+  LuSmartphone,
   LuTableProperties,
   LuTrash2,
   LuUndo2,
@@ -94,4 +97,7 @@ export const ReactIcons = {
   Error: MdOutlineErrorOutline,
   File: LuFolder,
   Gallery: TbPhoto,
+  Smartphone: LuSmartphone,
+  Building: LuBuilding2,
+  ArrowRight: LuArrowRight,
 };

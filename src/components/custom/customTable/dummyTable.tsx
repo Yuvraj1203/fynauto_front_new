@@ -1,3 +1,5 @@
+"use client";
+
 import type { ChipProps } from "@heroui/react";
 import type { SVGProps } from "react";
 

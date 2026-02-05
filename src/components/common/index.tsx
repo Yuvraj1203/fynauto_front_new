@@ -4,7 +4,6 @@ which we will use through out the app
 */
 export { default as BlankSection } from "./blankSection/blankSection";
 export { default as ColorPopover } from "./colorPopover/ColorPopover";
-export { default as LocalLogoutButton } from "./localLogoutButton/localLogoutButton";
 export { default as LoginButton } from "./loginButton/loginButton";
 export { default as Logout } from "./logout/logout";
 export { default as LogoutButton } from "./logoutButton/logoutButton";

@@ -1,3 +1,4 @@
+"use client";
 import { CustomRadius, CustomSize } from "@/services/types";
 import { Pagination } from "@heroui/react";
 

@@ -1,3 +1,4 @@
+"use client";
 import { Snippet } from "@heroui/react";
 import { ReactNode } from "react";
 

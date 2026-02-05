@@ -1,3 +1,5 @@
+"use client";
+
 enum PreloadEnum {
   None = "none",
   Metadata = "metadata",

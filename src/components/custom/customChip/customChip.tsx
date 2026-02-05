@@ -1,3 +1,4 @@
+"use client";
 import { CustomColor, CustomRadius, CustomSize } from "@/services/types";
 import { Chip } from "@heroui/react";
 import { ReactNode } from "react";

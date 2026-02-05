@@ -1,3 +1,4 @@
+"use client";
 import { CustomSize } from "@/services/types";
 import { Checkbox, CheckboxGroup } from "@heroui/react";
 

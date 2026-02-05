@@ -1,12 +1,20 @@
-import { Screen } from "@/components/template";
-import LoginPage from "./(routes)/(public)/auth/login/(components)/loginPage";
+// app/page.tsx
+import { CustomSpinner } from "@/components/custom";
+import { auth0 } from "@/lib/auth0";
+import { redirect } from "next/navigation";
 
-const Page = () => {
+export default async function Home() {
+  const session = await auth0.getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  if (session) {
+    redirect("/dashboard");
+  }
+
   return (
-    <Screen className=" flex flex-col gap-4 items-center justify-center bg-surface h-full w-full">
-      <LoginPage />
-    </Screen>
+    <CustomSpinner className="w-full h-full flex items-center justify-center" />
   );
-};
-
-export default Page;
+}

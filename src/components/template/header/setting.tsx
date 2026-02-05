@@ -1,10 +1,5 @@
 "use client";
-import {
-  LocalLogoutButton,
-  LogoutButton,
-  Text,
-  TextVariant,
-} from "@/components/common";
+import { LogoutButton, Text, TextVariant } from "@/components/common";
 import {
   CustomAutoComplete,
   CustomDrawer,
@@ -60,12 +55,12 @@ const Setting = () => {
     //check so that it wont change the theme by system theme on refresh
     if (!cookieTheme) {
       setTheme(
-        systemTheme == themeEnum.dark ? themeEnum.dark : themeEnum.light
+        systemTheme == themeEnum.dark ? themeEnum.dark : themeEnum.light,
       );
       setIsDark(systemTheme == themeEnum.dark);
       Cookies.set(
         CookiesType.theme,
-        systemTheme == themeEnum.dark ? themeEnum.dark : themeEnum.light
+        systemTheme == themeEnum.dark ? themeEnum.dark : themeEnum.light,
       );
     }
   }, [systemTheme]);
@@ -119,11 +114,7 @@ const Setting = () => {
             />
           </div>
           <div className="grow flex items-end py-3">
-            {isAuthEnable == "false" ? (
-              <LocalLogoutButton className={"w-full"} />
-            ) : (
-              <LogoutButton className={"w-full"} />
-            )}
+            <LogoutButton className={"w-full"} />
           </div>
         </>
       )}
