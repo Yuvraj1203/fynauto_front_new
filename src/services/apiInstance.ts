@@ -59,24 +59,13 @@ const refreshAccessToken = async () => {
 
 /* ======================================= REQUEST INTERCEPTOR ================== */
 axiosClient.interceptors.request.use(
-  (config) => {
-    const token = Cookies.get("accessTokenFyn");
+  async (config) => {
+    const res = await fetch("/api/auth/token");
+    const { accessToken } = await res.json();
 
-    if (config.method == HttpMethodApi.Post) {
-      const mandatoryData = {
-        firstname: "",
-        lastname: "",
-        preferName: "",
-        email: "",
-        phonenumber: "",
-      };
-      config.data = { ...config.data, userInfo: mandatoryData };
-    }
-
-    if (token) {
+    if (accessToken) {
       config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-      config.data = JSON.stringify({ ...config.data });
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
     return config;
