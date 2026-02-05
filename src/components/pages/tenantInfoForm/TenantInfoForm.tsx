@@ -213,7 +213,7 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
     <FormProvider {...methods}>
       <form
         onSubmit={methods.handleSubmit(onSubmit)}
-        className=" overflow-y-auto relative customScrollbar"
+        className=" overflow-y-auto relative scrollbar-hide"
       >
         <div className="flex flex-col p-5 gap-5">
           <FormTextInput

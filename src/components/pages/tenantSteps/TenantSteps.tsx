@@ -16,7 +16,12 @@ import IconGenerator from "../iconGenerator/IconGenerator";
 import TenantInfoForm from "../tenantInfoForm/TenantInfoForm";
 import ThemeGenerator, { colors } from "../themeGenerator/ThemeGenerator";
 
-const TenantSteps = () => {
+type TenantStepsProps = {
+  tenantId: string;
+  tenancyName: string;
+};
+
+const TenantSteps = ({ tenancyName, tenantId }: TenantStepsProps) => {
   const router = useRouter(); // router used in procceed
   const currentStepFromStore = useCurrentTenantInfoStore(
     (state) => state.currentStep,
@@ -31,8 +36,6 @@ const TenantSteps = () => {
   }, [currentStepFromStore]);
 
   useEffect(() => {
-    const { tenantId, tenancyName } =
-      useCurrentTenantInfoStore.getState().currentTenantInfo;
     if (tenantId) {
       GetTenantFormDataApi.mutate({ tenantId, tenancyName });
     }
@@ -46,8 +49,7 @@ const TenantSteps = () => {
     );
     UpdateTenantStepApi.mutate({
       params: {
-        tenantId:
-          useCurrentTenantInfoStore.getState()?.currentTenantInfo.tenantId,
+        tenantId: tenantId,
         step: stepsData.step,
       },
       data: stepsData.steps,
@@ -102,10 +104,7 @@ const TenantSteps = () => {
     onSuccess(data, variables, context) {
       if (data.result) {
         tenantDataStore.setTenantId(data.result?.id!);
-        if (
-          data?.result?.tenantFormData?.tenantId ==
-          useCurrentTenantInfoStore.getState().currentTenantInfo.tenantId
-        ) {
+        if (data?.result?.tenantFormData?.tenantId == tenantId) {
           tenantDataStore.setTenantFormInfo(data?.result?.tenantFormData!);
         } else {
           tenantDataStore.setTenantFormInfo({});

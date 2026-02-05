@@ -58,7 +58,7 @@ const Timeline = () => {
   // ];
 
   return (
-    <div className="flex items-center bg-background px-2 py-0.5 w-[50vw] rounded-2xl grow gap-2 md:gap-4 duration-400 scrollbar-hide overflow-x-auto">
+    <div className="flex items-center justify-center h-full bg-background px-2 py-0.5 w-[50vw] md:w-full rounded-2xl grow gap-2 md:gap-4 duration-400 scrollbar-hide overflow-x-auto">
       {timelineData?.steps?.map((item, index) => {
         return (
           <div
@@ -71,7 +71,7 @@ const Timeline = () => {
             >
               {item.status == TenantStatusEnum.completed ? (
                 <span className="size-5 rounded-full text-xs inline-grid place-content-center font-semibold text-success duration-400">
-                  <ReactIcons.TickCircle />
+                  <ReactIcons.TickCircle size={20} />
                 </span>
               ) : (
                 <span

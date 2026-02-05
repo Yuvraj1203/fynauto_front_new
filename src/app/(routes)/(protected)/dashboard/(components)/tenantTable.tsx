@@ -286,7 +286,7 @@ const TenantTable = ({
     console.log(user.step, "user.step");
     currentTenantInfo.setCurrentStep(user.step!);
     Cookies.set("currentTenant", user.tenantId!);
-    router.push("/dashboard/tenant-creation");
+    router.push(`/dashboard/${user.tenantId}-${user.tenancyName}`);
   };
 
   const renderCell = React.useCallback(

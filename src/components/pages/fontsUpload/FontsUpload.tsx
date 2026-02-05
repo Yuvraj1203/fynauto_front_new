@@ -265,7 +265,7 @@ const FontsUpload = ({ handleProceed }: FontsUploadProps) => {
 
   return (
     <>
-      <div className="flex flex-col gap-5 p-5 grow">
+      <div className="flex flex-col gap-5 p-5 grow overflow-auto customScrollbar">
         <CustomSelect
           data={fontDropDown}
           itemKey={"key"}

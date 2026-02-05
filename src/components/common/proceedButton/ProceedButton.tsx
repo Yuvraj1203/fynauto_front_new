@@ -68,7 +68,7 @@ const ProceedButton = ({
     <>
       {userStore.role !== UserRoleEnum.viewer && (
         <div
-          className={` bg-background border-t-1 border-surface px-5 py-4 sticky z-10 bottom-0 left-0 right-0 rounded-2xl ${className}`}
+          className={` bg-surface border-t-1 border-default-100 px-5 py-4 sticky z-10 bottom-0 left-0 right-0 rounded-2xl ${className}`}
         >
           {startContent && startContent}
           <Button

@@ -7,6 +7,7 @@ import { useSidebarStore } from "@/store/zustandStore";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { LogoutButton } from "@/components/common";
 import NavItem from "./navItem";
 
 const navList = [
@@ -62,6 +63,9 @@ const Sidebar = ({ onClose, fromLayout }: SidebarProps) => {
           />
         ))}
       </nav>
+      <div className="grow flex items-end w-full py-3">
+        <LogoutButton className={"w-full"} isSidebarOpen={isSidebarOpen} />
+      </div>
     </aside>
   );
 };

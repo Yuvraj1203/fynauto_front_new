@@ -155,7 +155,7 @@ const IconGenerator = ({ handleProceed }: IconGeneratorProps) => {
   }: DropBoxContainerProps) => (
     <>
       <div
-        className={`flex flex-col gap-3 p-3 rounded-2xl max-w-72 shadow-fullShadow`}
+        className={`flex flex-col gap-3 p-3 rounded-2xl bg-default-200 max-w-72 shadow-fullShadow`}
       >
         <div className="flex justify-between px-1.5">
           <span className="heading4 text-outline">{title}</span>
@@ -182,7 +182,7 @@ const IconGenerator = ({ handleProceed }: IconGeneratorProps) => {
 
   return (
     <>
-      <div className="flex flex-wrap gap-7 justify-around p-5 grow">
+      <div className="flex flex-wrap gap-7 justify-around p-5 grow overflow-auto customScrollbar">
         <DropBoxContainer
           content={`Upload app icon or you can drag drop the icon here as well`}
           title={`App Icon`}

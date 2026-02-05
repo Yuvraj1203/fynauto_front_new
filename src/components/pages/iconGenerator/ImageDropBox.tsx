@@ -123,13 +123,15 @@ const ImageDropBox: FC<FileDropZoneProps> = ({
         onClick={handleClick}
         className={`${
           dropZoneActive ? "" : ""
-        } flex flex-col gap-3 bg-backgroundContainer grow w-52 md:w-64 h-40 items-center justify-center rounded-2xl p-3 text-center cursor-pointer duration-400`}
+        } flex flex-col gap-3 bg-background grow w-52 md:w-64 h-40 items-center justify-center rounded-2xl p-3 text-center cursor-pointer duration-400`}
       >
         {files.length > 0 && files[0] instanceof File ? (
           <CustomImage
             src={URL.createObjectURL(files[0])}
             alt="Preview"
             className="w-full h-full rounded-2xl"
+            width={400}
+            height={400}
           />
         ) : (
           <>
@@ -138,9 +140,9 @@ const ImageDropBox: FC<FileDropZoneProps> = ({
                 dropZoneActive
                   ? "text-success scale-125"
                   : "text-outline scale-100"
-              } flex items-center justify-center size-10 shadow-lightShadow rounded-2xl duration-400 bg-onPrimary`}
+              } flex items-center justify-center size-10 shadow-lightShadow rounded-2xl duration-400 bg-background`}
             >
-              <ReactIcons.Gallery />
+              <ReactIcons.Gallery size={44} />
             </span>
             <p
               className={`${

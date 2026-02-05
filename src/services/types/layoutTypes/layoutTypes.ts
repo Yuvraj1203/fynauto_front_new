@@ -3,4 +3,5 @@ export type LayoutTypes = {
   className?: string;
   containerStyle?: string;
   defaultPadding?: boolean;
+  isSidebarOpen?: boolean;
 };

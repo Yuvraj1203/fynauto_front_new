@@ -34,6 +34,7 @@ import {
   LuGitBranch,
   LuHash,
   LuListOrdered,
+  LuLogOut,
   LuMessageSquare,
   LuRefreshCcw,
   LuSave,
@@ -100,4 +101,5 @@ export const ReactIcons = {
   Smartphone: LuSmartphone,
   Building: LuBuilding2,
   ArrowRight: LuArrowRight,
+  Logout: LuLogOut,
 };

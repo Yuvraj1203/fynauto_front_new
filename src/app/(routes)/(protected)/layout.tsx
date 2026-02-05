@@ -9,7 +9,7 @@ const layout = ({ children }: LayoutTypes) => {
         <Sidebar fromLayout={true} />
         <div className="grow flex flex-col h-dvh">
           <Header />
-          <main className="flex flex-col grow p-5 bg-background rounded-2xl ">
+          <main className="flex flex-col grow p-5 bg-background rounded-2xl h-[calc(100dvh-4rem)] overflow-auto scrollbar-hide">
             {children}
           </main>
           {/* <Footer /> */}

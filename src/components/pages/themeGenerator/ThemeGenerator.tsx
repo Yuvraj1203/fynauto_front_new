@@ -463,42 +463,48 @@ const ThemeGenerator = ({ handleProceed }: ThemeGeneratorProps) => {
 
   return (
     <>
-      <div className="flex justify-between px-5 pt-3">
-        <h2 className="heading3 ">{"Playground"}</h2>
-      </div>
-      <div className="flex max-md:flex-col justify-between p-5">
-        <div className="flex flex-wrap md:grow md:flex-col gap-4 p-5 max-md:justify-around">
-          {Object.entries(themeMainColors).map(([key, value]) => (
-            <ColorBox
-              key={key}
-              label={key as DisplayColorKey}
-              color={value}
-              handleThemeColorsUpdate={handleThemeMainColorsUpdate}
-              isCustomizable={true}
-            />
-          ))}
+      <div className="grow overflow-auto customScrollbar">
+        <div className="flex justify-between px-5 pt-3">
+          <h2 className="heading3 ">{"Playground"}</h2>
         </div>
-
-        <div className="flex gap-4 p-5 w-full md:w-2/3  justify-around">
-          <div
-            className={"h-fit w-1/2 max-w-fit flex"}
-            style={{ backgroundColor: themeColors.light.primary }}
-          >
-            <CustomImage
-              src={Images.loginScreen}
-              className={"max-h-full md:max-h-72"}
-              containerStyle={``}
-            />
+        <div className="flex max-md:flex-col justify-between p-5">
+          <div className="flex flex-wrap md:grow md:flex-col gap-4 p-5 max-md:justify-around">
+            {Object.entries(themeMainColors).map(([key, value]) => (
+              <ColorBox
+                key={key}
+                label={key as DisplayColorKey}
+                color={value}
+                handleThemeColorsUpdate={handleThemeMainColorsUpdate}
+                isCustomizable={true}
+              />
+            ))}
           </div>
-          <div
-            className={"h-fit w-1/2 max-w-fit flex"}
-            style={{ backgroundColor: themeColors.light.primary }}
-          >
-            <CustomImage
-              src={Images.profileScreen}
-              className={"max-h-full md:max-h-72"}
-              containerStyle={``}
-            />
+
+          <div className="flex gap-4 p-5 w-full md:w-2/3  justify-around">
+            <div
+              className={"h-fit w-1/2 max-w-fit flex"}
+              style={{ backgroundColor: themeColors.light.primary }}
+            >
+              <CustomImage
+                src={Images.loginScreen}
+                className={"max-h-full md:max-h-72"}
+                containerStyle={``}
+                width={200}
+                height={400}
+              />
+            </div>
+            <div
+              className={"h-fit w-1/2 max-w-fit flex"}
+              style={{ backgroundColor: themeColors.light.primary }}
+            >
+              <CustomImage
+                src={Images.profileScreen}
+                className={"max-h-full md:max-h-72"}
+                containerStyle={``}
+                width={200}
+                height={400}
+              />
+            </div>
           </div>
         </div>
       </div>
