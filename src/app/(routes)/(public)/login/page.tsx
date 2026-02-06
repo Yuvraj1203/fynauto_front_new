@@ -7,13 +7,15 @@ import Link from "next/link";
 
 const LoginPage = () => {
   const t = useTranslations();
+  const env = process.env.NEXT_PUBLIC_API_ENVNAME;
+
   return (
     <div className="flex flex-col gap-4 md:gap-6 items-center justify-center w-full m-auto  p-4 md:p-6">
       <div className="border-2 border-primary-200 text-primary-200 rounded-medium p-4 bg-primary-50">
         <ReactIcons.Building size={32} />
       </div>
       <div className="flex flex-col items-center gap-2">
-        <Text variant={TextVariant.title}>{t("WelcomeBack")}</Text>
+        <Text variant={TextVariant.title}>{`${t("WelcomeBack")} - ${env}`}</Text>
         <Text variant={TextVariant.subTitle}>
           {t("SignInToAccessYourDashboard")}
         </Text>
