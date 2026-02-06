@@ -31,25 +31,15 @@ export type TenantColorsType = {
   light: TenantColorSet;
   dark: TenantColorSet;
 };
-
-export type TenantInfoType = {
-  domain?: string;
-  clientId?: string;
-  redirect_uri?: string;
-  isData?: boolean;
-};
-
 export type TenantResponse =
   | {
-      success: true;
-      data: {
-        tenantInfo: TenantInfoType;
-        isTenantInfo: boolean;
-        color: TenantColorsType;
-        isColor: boolean;
-      };
-    }
-  | {
-      success: false;
-      message: string;
+    success: true;
+    data: {
+      color: TenantColorsType;
+      isColor: boolean;
     };
+  }
+  | {
+    success: false;
+    message: string;
+  };

@@ -1,7 +1,6 @@
-import { TenantInfoType } from "@/services/types";
-import { OneColors, tenantInfoOne } from "@/tenants/one";
-import { ThreeColors, tenantInfoThree } from "@/tenants/three";
-import { TwoColors, tenantInfoTwo } from "@/tenants/two";
+import { OneColors } from "@/tenants/one";
+import { ThreeColors } from "@/tenants/three";
+import { TwoColors } from "@/tenants/two";
 import { NextResponse } from "next/server";
 
 export const tenants: Record<
@@ -16,12 +15,6 @@ export const tenants: Record<
   three: ThreeColors,
 };
 
-export const tenantInfo: Record<string, TenantInfoType> = {
-  one: tenantInfoOne,
-  two: tenantInfoTwo,
-  three: tenantInfoThree,
-};
-
 export async function GET(
   request: Request,
   context: { params: Promise<{ tenantSub: string }> }
@@ -29,10 +22,6 @@ export async function GET(
   const { tenantSub } = await context.params;
 
   const responseData = {
-    tenantInfo: {
-      isData: tenantInfo[tenantSub] ? true : false,
-      ...tenantInfo[tenantSub],
-    },
     color: tenantSub && tenants[tenantSub] ? tenants[tenantSub] : tenants.one,
   };
 

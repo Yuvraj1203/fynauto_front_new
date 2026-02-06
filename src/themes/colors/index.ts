@@ -29,7 +29,6 @@ export const getTenantStyle = async () => {
     return {
       isColor: false,
       color: "",
-      tenantInfo: { isData: false },
     };
   }
 };
