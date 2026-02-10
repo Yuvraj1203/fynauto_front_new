@@ -4,6 +4,6 @@ export { CookiesType, LocaleEnum, themeEnum } from "./storage/cookiesType";
 export {
   type TenantColorSet,
   type TenantColorsType,
-  type TenantInfoType,
-  type TenantResponse,
+  type TenantResponse
 } from "./tenantInfoTypes/tenantInfoTypes";
+
