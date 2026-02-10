@@ -8,7 +8,7 @@ import Link from "next/link";
 const LoginPage = () => {
   const t = useTranslations();
   return (
-    <div className="flex flex-col gap-4 md:gap-6 items-center justify-center w-full m-auto  p-4 md:p-6">
+    <div className="flex flex-col gap-4 md:gap-6 items-center justify-center w-full m-auto p-4 md:p-6">
       <div className="border-2 border-primary-200 text-primary-200 rounded-medium p-4 bg-primary-50">
         <ReactIcons.Building size={32} />
       </div>
@@ -19,7 +19,10 @@ const LoginPage = () => {
         </Text>
       </div>
 
-      <CustomCard bodyStyle="flex flex-col min-h-fit items-center gap-4 p-6">
+      <CustomCard
+        baseStyle={"shadow-sm duration-200 hover:shadow-md"}
+        bodyStyle="flex flex-col min-h-fit items-center gap-4 p-6"
+      >
         <Text variant={TextVariant.subTitle}>{t("ChooseSignInMethod")}</Text>
 
         <div className="group flex w-full items-center gap-3 p-2 border-1 border-default-300 bg-default-50 hover:bg-default-100 rounded-medium cursor-pointer duration-250">
