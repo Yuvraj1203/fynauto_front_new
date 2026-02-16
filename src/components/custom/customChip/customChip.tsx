@@ -37,7 +37,7 @@ const CustomChip = ({ ...props }: CustomChipProps) => {
         startContent={props.startContent}
         endContent={props.endContent}
         onClose={props.onClose}
-        className={props.className}
+        className={`opacity-75 hover:opacity-100 ${props.className}`}
         classNames={{
           content: `${props.contentStyle} font-medium`,
           base: "rounded-md",

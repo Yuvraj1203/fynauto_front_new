@@ -1,4 +1,3 @@
-import { getTenantStyle } from "@/themes/colors";
 import type { Metadata } from "next";
 import { Quicksand } from "next/font/google";
 import "./globals.css";
@@ -23,14 +22,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const tenantData = await getTenantStyle();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${quicksand.className} scroll-smooth bg-surface text-secondary-text antialiased h-screen`}
       >
-        {tenantData.isColor && <style>{tenantData.color}</style>}
         <ServerProvider>
           <ClientProvider>{children}</ClientProvider>
         </ServerProvider>

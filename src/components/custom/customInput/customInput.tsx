@@ -65,8 +65,8 @@ const CustomInput = ({
   radius = CustomRadius.md,
   labelPlacement = LabelPlacementEnum.outside,
   inputStyle = "text-default-900 font-medium",
-  inputWrapperStyle = "border-1 bg-componentBg hover:bg-componentBgHover",
-  labelStyle = "text-nowrap",
+  inputWrapperStyle = "",
+  labelStyle = "text-nowrap font-semibold",
   descriptionStyle = "text-nowrap",
   ...props
 }: CustomInputProps) => {

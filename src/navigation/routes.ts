@@ -13,6 +13,7 @@ export const Routes = {
     dashboard: "/dashboard",
     // createCaptureForm: (formId: "new-form" | number) =>
     //   `/capture-tool/${formId}`,
+    releaseTable: "/release-table",
   },
 
   noRedirection: "/#",

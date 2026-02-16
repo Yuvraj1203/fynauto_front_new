@@ -16,6 +16,11 @@ const navList = [
     icon: <ReactIcons.Dashboard size={24} className="p-0.5" />,
     href: Routes.protected.dashboard,
   },
+  {
+    label: "Tenant Release List",
+    icon: <ReactIcons.List size={24} className="p-0.5" />,
+    href: Routes.protected.releaseTable,
+  },
 ];
 
 type SidebarProps = {

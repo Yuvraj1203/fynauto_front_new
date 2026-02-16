@@ -33,9 +33,10 @@ type CustomTableProps<T> = {
   tbodyStyle?: string;
   theadStyle?: string;
   tdStyle?: string;
+  removeWrapper?: boolean;
   renderCustomCell?: (
     item: T,
-    columnKey: keyof T
+    columnKey: keyof T,
   ) => string | number | ReactNode;
 };
 
@@ -88,6 +89,7 @@ const CustomTable = <T extends object>({
       isHeaderSticky={props.isHeaderSticky}
       isStriped={props.isStriped}
       isCompact={props.isCompact}
+      removeWrapper={props.removeWrapper}
       classNames={{
         tbody: `${props.tbodyStyle ? props.tbodyStyle : ""}`,
         thead: `${

@@ -1,4 +1,6 @@
 "use client";
+import { Text, TextVariant } from "@/components/common";
+import { CustomColor } from "@/services/types";
 import {
   Button,
   Modal,
@@ -9,6 +11,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { cloneElement, ReactElement, ReactNode } from "react";
+import CustomButton, { ButtonVariant } from "../customButton/customButton";
 
 export enum BackdropEnum {
   opaque = "opaque",
@@ -18,6 +21,7 @@ export enum BackdropEnum {
 
 type CustomModalProps<T extends object = any> = {
   title?: ReactNode;
+  subTitle?: ReactNode;
   content?: ReactNode;
   closeButton?: boolean;
   actionButton?: string;
@@ -28,6 +32,7 @@ type CustomModalProps<T extends object = any> = {
   backdrop?: BackdropEnum;
   closeFloating?: string;
   children?: (onClose: () => void) => ReactNode;
+  loading?: boolean;
 };
 
 const CustomModal = ({
@@ -39,9 +44,10 @@ const CustomModal = ({
   trigger,
   wrapperStyle,
   contentWrapperStyle,
-  backdrop = BackdropEnum.transparent,
+  backdrop = BackdropEnum.blur,
   closeFloating,
   children,
+  ...props
 }: CustomModalProps) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -68,6 +74,14 @@ const CustomModal = ({
               {title && (
                 <ModalHeader className="flex flex-col gap-1">
                   {title}
+                  {props.subTitle && (
+                    <Text
+                      variant={TextVariant.subTitle}
+                      className="text-secondary-text font-semibold"
+                    >
+                      {props.subTitle}
+                    </Text>
+                  )}
                 </ModalHeader>
               )}
 
@@ -78,14 +92,21 @@ const CustomModal = ({
               {(closeButton || actionButton) && (
                 <ModalFooter>
                   {closeButton && (
-                    <Button color="danger" variant="ghost" onPress={onClose}>
+                    <CustomButton
+                      color={CustomColor.danger}
+                      variant={ButtonVariant.light}
+                      onClick={onClose}
+                    >
                       Close
-                    </Button>
+                    </CustomButton>
                   )}
                   {actionButton && (
-                    <Button color="primary" onPress={actionButtonPress}>
+                    <CustomButton
+                      loading={props.loading}
+                      onClick={actionButtonPress}
+                    >
                       {actionButton}
-                    </Button>
+                    </CustomButton>
                   )}
                 </ModalFooter>
               )}

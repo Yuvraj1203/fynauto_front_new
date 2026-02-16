@@ -3,15 +3,15 @@ import { CustomColor, CustomRadius } from "@/services/types";
 import { addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
-type SnackbarEnum =
-  | "success"
-  | "default"
-  | "foreground"
-  | "primary"
-  | "secondary"
-  | "warning"
-  | "danger"
-  | undefined;
+export enum SnackbarEnum {
+  "success" = "success",
+  "default" = "default",
+  "foreground" = "foreground",
+  "primary" = "primary",
+  "secondary" = "secondary",
+  "warning" = "warning",
+  "danger" = "danger",
+}
 
 //********************** toast types and enums START ************/
 type showSnackbarProps = {
@@ -71,7 +71,7 @@ export function getGlobalCSSProp(value: string): string {
 //********************** toast Function START ************/
 export const showSnackbar = (
   msg: string,
-  type: SnackbarEnum | undefined = "default",
+  type: SnackbarEnum,
   delay: number = 0,
   timeout: number = 1000,
 ) => {

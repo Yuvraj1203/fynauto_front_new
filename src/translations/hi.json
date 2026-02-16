@@ -151,5 +151,15 @@
   "VideoURLPlaceholder": "https://youtube.com/embed/...",
   "WelcomeBack": "वापसी पर स्वागत है!",
   "WelcomeToOurForm": "हमारे फॉर्म में आपका स्वागत है",
-  "when": "कब"
+  "when": "कब",
+  "TenantReleases": "किरायेदार विज्ञप्ति",
+  "TenantReleaseSubtitle": "विभिन्न संस्करणों में टैनेंट ऐप रिलीज़ को ट्रैक और प्रबंधित करें",
+  "Release": "मुक्त करना",
+  "Tenants": "किरायेदारों",
+  "NewRelease": "नई रिलीज",
+  "CreateNewRelease": "नई रिलीज़ बनाएं",
+  "CreateNewReleaseSubtitle": "इस रिलीज़ के लिए ऐप प्रकाशन संस्करण दर्ज करें।",
+  "ReleaseVersion": "प्रसारित संस्करण",
+  "Create": "बनाएं",
+  "Close": "बंद करना"
 }

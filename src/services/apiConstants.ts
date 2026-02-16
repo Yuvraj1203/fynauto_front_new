@@ -14,4 +14,6 @@ export const ApiConstants = {
   CreateColors: "api/v1/colorStep/createColors",
   IconGenerator: "api/v1/iconGenerator/iconGenerator",
   Login: "api/v1/user/login",
+  CreateReleasesVersion: "/api/v1/releasesVersion/createReleasesVersion",
+  GetReleasesVersion: "/api/v1/releasesVersion/getReleasesVersion",
 };

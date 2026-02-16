@@ -3,7 +3,10 @@ this folder consist Hero Ui component
 will be helpfull to switch the the library if needed in future
 */
 
-export { default as CustomAccordian } from "./customAccordian/customAccordian";
+export {
+  AccordionVariant,
+  default as CustomAccordion,
+} from "./customAccordion/customAccordion";
 export { default as CustomAutoComplete } from "./customAutoComplete/customAutoComplete";
 export {
   ButtonType,

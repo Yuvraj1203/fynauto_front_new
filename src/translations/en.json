@@ -151,5 +151,15 @@
   "VideoURLPlaceholder": "https://youtube.com/embed/...",
   "WelcomeBack": "Welcome Back!",
   "WelcomeToOurForm": "Welcome to Our Form",
-  "when": "when"
+  "when": "when",
+  "TenantReleases": "Tenant Releases",
+  "TenantReleaseSubtitle": "Track and manage tenant app releases across versions",
+  "Release": "Release",
+  "Tenants": "Tenants",
+  "NewRelease": "New Release",
+  "CreateNewRelease": "Create New Release",
+  "CreateNewReleaseSubtitle": "Enter the app publication version for this release.",
+  "ReleaseVersion": "Release Version",
+  "Create": "Create",
+  "Close": "Close"
 }

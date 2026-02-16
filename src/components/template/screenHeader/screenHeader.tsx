@@ -10,6 +10,7 @@ type ScreenHeaderProps = {
   subTitle?: string;
   buttonContainerStyle?: string;
   showBackButton?: boolean;
+  moderateCustomStyle?: boolean;
 };
 const ScreenHeader = ({
   children,
@@ -18,10 +19,11 @@ const ScreenHeader = ({
   subTitle,
   buttonContainerStyle,
   showBackButton = false,
+  ...props
 }: ScreenHeaderProps) => {
   return (
     <div
-      className={`flex gap-4 items-center justify-between bg-surface border-b-1 border-default-300 w-full ${className}`}
+      className={`flex gap-4 items-center justify-between ${props.moderateCustomStyle ? className : `bg-surface border-b-1 border-default-300 w-full ${className}`}`}
     >
       <div className="flex gap-2">
         {showBackButton && <HeaderBackButton />}
