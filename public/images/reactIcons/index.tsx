@@ -20,6 +20,7 @@ import {
   IoCloseCircle,
   IoLinkOutline,
   IoList,
+  IoPlayOutline,
   IoSettingsOutline,
   IoWarning,
 } from "react-icons/io5";
@@ -102,4 +103,5 @@ export const ReactIcons = {
   Building: LuBuilding2,
   ArrowRight: LuArrowRight,
   Logout: LuLogOut,
+  Play: IoPlayOutline,
 };

@@ -161,5 +161,9 @@
   "CreateNewReleaseSubtitle": "Enter the app publication version for this release.",
   "ReleaseVersion": "Release Version",
   "Create": "Create",
-  "Close": "Close"
+  "Close": "Close",
+  "Deploy": "Deploy",
+  "Deploying": "Deploying...",
+  "Retry": "Retry",
+  "Live": "Live"
 }

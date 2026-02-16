@@ -1,12 +1,11 @@
 "use client";
 
 import {
+  ButtonVariant,
   ChipVariant,
+  CustomButton,
   CustomChip,
-  CustomSnippet,
   CustomTable,
-  CustomTooltip,
-  SnippetVariantEnum,
 } from "@/components/custom";
 import { ReactIcons } from "@/public";
 import { CustomColor, CustomSize } from "@/services/types";
@@ -64,29 +63,44 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
             </CustomChip>
           );
         case "id":
-          return (
-            <div className="relative flex items-center gap-2">
-              <CustomTooltip content={t("Clone")}>
-                <CustomSnippet
-                  variant={SnippetVariantEnum.flat}
-                  className={
-                    "flex items-center justify-center text-default-600 bg-surface group-hover:bg-default-100 duration-250 min-w-4.5 p-0"
-                  }
-                  codeString={item.name}
-                />
-              </CustomTooltip>
-              <CustomTooltip content={t("EditForm")}>
-                <span className="text-lg text-default-600 cursor-pointer active:opacity-50 p-1.75">
-                  <ReactIcons.Edit size={18} />
-                </span>
-              </CustomTooltip>
-              <CustomTooltip color={CustomColor.danger} content="Delete user">
-                <span className="text-lg text-danger cursor-pointer active:opacity-50 p-1.75">
-                  <ReactIcons.Delete size={18} />
-                </span>
-              </CustomTooltip>
-            </div>
-          );
+          switch (item.status) {
+            case TenantReleaseStatusEnum.Pending:
+              return (
+                <CustomButton
+                  startContent={<ReactIcons.Play />}
+                  className="bg-focus"
+                >
+                  {t("Deploy")}
+                </CustomButton>
+              );
+            case TenantReleaseStatusEnum.Ongoing:
+              return (
+                <CustomButton color={CustomColor.default} loading={true}>
+                  {t("Deploying")}
+                </CustomButton>
+              );
+            case TenantReleaseStatusEnum.Failed:
+              return (
+                <CustomButton
+                  color={CustomColor.danger}
+                  startContent={<ReactIcons.Refresh />}
+                >
+                  {t("Retry")}
+                </CustomButton>
+              );
+            case TenantReleaseStatusEnum.Published:
+              return (
+                <CustomButton
+                  startContent={<ReactIcons.TickCircle />}
+                  color={CustomColor.success}
+                  variant={ButtonVariant.light}
+                >
+                  {t("Live")}
+                </CustomButton>
+              );
+            default:
+              return null;
+          }
         default:
           return cellValue;
       }

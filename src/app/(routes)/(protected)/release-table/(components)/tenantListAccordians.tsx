@@ -24,14 +24,14 @@ export enum TenantReleaseStatusEnum {
   Pending = 0,
   Ongoing = 1,
   Published = 2,
-  Failded = 3,
+  Failed = 3,
 }
 
 export const TenantReleaseStatusEnumLabel: Record<number, string> = {
   [TenantReleaseStatusEnum.Pending]: "Pending",
   [TenantReleaseStatusEnum.Ongoing]: "On-Going",
   [TenantReleaseStatusEnum.Published]: "Published",
-  [TenantReleaseStatusEnum.Failded]: "Failded",
+  [TenantReleaseStatusEnum.Failed]: "Failded",
 };
 
 export type TenantReleaseDataType = {
@@ -165,7 +165,7 @@ const TenantListAccordians = ({
           )}
           {renderStatusChip(
             releaseVersionItem.status.failed,
-            TenantReleaseStatusEnum.Failded,
+            TenantReleaseStatusEnum.Failed,
           )}
         </div>
       </div>
