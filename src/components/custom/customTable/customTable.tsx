@@ -4,6 +4,7 @@ import { CustomSpinner } from "@/components/custom";
 import { useSidebarStore } from "@/store/zustandStore";
 import {
   getKeyValue,
+  Selection,
   Table,
   TableBody,
   TableCell,
@@ -18,6 +19,11 @@ type Column<T> = {
   key: keyof T | string;
   label: string;
 };
+
+export enum TableSelectionModeEnum {
+  Single = "single",
+  Multiple = "multiple",
+}
 
 type CustomTableProps<T> = {
   columns?: Column<T>[];
@@ -38,6 +44,8 @@ type CustomTableProps<T> = {
     item: T,
     columnKey: keyof T,
   ) => string | number | ReactNode;
+  selectionMode?: TableSelectionModeEnum;
+  onSelectionChange?: ((keys: Selection) => void) | undefined;
 };
 
 const CustomTable = <T extends object>({
@@ -88,6 +96,8 @@ const CustomTable = <T extends object>({
       } duration-250`}
       isHeaderSticky={props.isHeaderSticky}
       isStriped={props.isStriped}
+      selectionMode={props.selectionMode}
+      onSelectionChange={props.onSelectionChange}
       isCompact={props.isCompact}
       removeWrapper={props.removeWrapper}
       classNames={{

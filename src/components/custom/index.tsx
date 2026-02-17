@@ -62,7 +62,10 @@ export {
   SpinnerVariant,
 } from "./customSpinner/customSpinner";
 export { default as CustomSwitch } from "./customSwitch/customSwitch";
-export { default as CustomTable } from "./customTable/customTable";
+export {
+  default as CustomTable,
+  TableSelectionModeEnum,
+} from "./customTable/customTable";
 export { default as CustomTextarea } from "./customTextarea/customTextarea";
 export { default as CustomTooltip } from "./customTooltip/customTooltip";
 export { default as CustomVideo } from "./customVideo/customVideo";

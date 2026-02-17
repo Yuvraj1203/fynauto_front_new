@@ -6,6 +6,7 @@ import {
   CustomButton,
   CustomChip,
   CustomTable,
+  TableSelectionModeEnum,
 } from "@/components/custom";
 import { ReactIcons } from "@/public";
 import { CustomColor, CustomSize } from "@/services/types";
@@ -116,6 +117,8 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
       isHeaderSticky={true}
       renderCustomCell={renderCustomCell}
       removeWrapper={true}
+      selectionMode={TableSelectionModeEnum.Multiple}
+      onSelectionChange={(value) => console.log("valuue=>", value)}
     />
   );
 };
