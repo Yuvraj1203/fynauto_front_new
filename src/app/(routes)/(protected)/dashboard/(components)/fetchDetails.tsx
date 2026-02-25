@@ -6,7 +6,7 @@ import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
 import { GetTenantIdByNameModel } from "@/services/models";
 import { TenantStatusEnum } from "@/services/models/getTenantIdByNameModel/getTenantIdByNameModel";
 import { useCurrentTenantInfoStore } from "@/store/zustandStore";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import {
   Button,
   Input,
@@ -121,7 +121,7 @@ const FetchDetails = ({ getAllTenants, onClose }: FetchDetailsProps) => {
         currentTenantInfo.setCurrentTenantInfo(data.result);
       } else {
         setTenancyData({});
-        showSnackbar("Invalid Tenancy Name", "danger");
+        showSnackbar("Invalid Tenancy Name", SnackbarEnum.Danger);
         buttonIconRef.current = "wrong";
       }
     },
@@ -137,7 +137,7 @@ const FetchDetails = ({ getAllTenants, onClose }: FetchDetailsProps) => {
     onError(error, variables, context) {
       buttonIconRef.current = "wrong";
       setTenancyData({});
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 
@@ -158,14 +158,14 @@ const FetchDetails = ({ getAllTenants, onClose }: FetchDetailsProps) => {
     },
     onSuccess(data, variables, context) {
       if (data.result) {
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
         addButtonRef.current = "inserted";
         onClose();
         getAllTenants();
       }
     },
     onError(error, variables, context) {
-      showSnackbar("Unable to add tenant", "danger");
+      showSnackbar("Unable to add tenant", SnackbarEnum.Danger);
       addButtonRef.current = null;
     },
   });

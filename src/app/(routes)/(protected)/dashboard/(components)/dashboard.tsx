@@ -6,7 +6,7 @@ import {
   makeRequest,
 } from "@/services/apiInstance";
 import { GetTenantIdByNameModel } from "@/services/models";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Spinner } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import Cookies from "js-cookie";
@@ -84,11 +84,11 @@ function Dashboard() {
     onSuccess(data, variables, context) {
       if (data.result) {
         getAllTenants();
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
       }
     },
     onError(error, variables, context) {
-      showSnackbar("Unable to remove tenant", "warning");
+      showSnackbar("Unable to remove tenant", SnackbarEnum.Warning);
     },
   });
 
@@ -123,11 +123,11 @@ function Dashboard() {
         a.remove();
         window.URL.revokeObjectURL(url);
       } else {
-        showSnackbar("Invalid file received", "warning");
+        showSnackbar("Invalid file received", SnackbarEnum.Warning);
       }
     },
     onError(error, variables, context) {
-      showSnackbar("Unable to Download Zip", "danger");
+      showSnackbar("Unable to Download Zip", SnackbarEnum.Danger);
     },
   });
 

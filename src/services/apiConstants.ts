@@ -16,4 +16,8 @@ export const ApiConstants = {
   Login: "api/v1/user/login",
   CreateReleasesVersion: "/api/v1/releasesVersion/createReleasesVersion",
   GetReleasesVersion: "/api/v1/releasesVersion/getReleasesVersion",
+  GetAllBranchesFromAzure:
+    "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/git/repositories/FynancialReactNativeMobileApp/refs?filter=heads/&api-version=7.1-preview.1",
+  // Azure Credentials API
+  GlobalSettings: "api/v1/globalSettings/globalSettings",
 };

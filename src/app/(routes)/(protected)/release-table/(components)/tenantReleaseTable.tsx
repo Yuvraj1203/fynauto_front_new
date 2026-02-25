@@ -11,7 +11,8 @@ import {
 import { ReactIcons } from "@/public";
 import { CustomColor, CustomSize } from "@/services/types";
 import { useTranslations } from "next-intl";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import AzureTokenModal from "./AzureTokenModal";
 import {
   TenantReleaseDataType,
   TenantReleaseStatusEnum,
@@ -41,6 +42,74 @@ export const statusColorMap: Record<number, CustomColor> = {
 
 const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
   const t = useTranslations();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTenants, setSelectedTenants] = useState<
+    TenantReleaseDataType[]
+  >([]);
+  const [tableSelection, setTableSelection] = useState<any>(new Set());
+
+  const handleDeployClick = (item: TenantReleaseDataType) => {
+    setSelectedTenants([item]);
+    setIsModalOpen(true);
+  };
+
+  const handleMultipleDeployClick = () => {
+    // Filter selected items that are in Pending or Failed status
+    const deployableItems = tenantReleaseData.filter(
+      (item) =>
+        tableSelection.has(item.id) &&
+        (item.status === TenantReleaseStatusEnum.Pending ||
+          item.status === TenantReleaseStatusEnum.Failed),
+    );
+
+    if (deployableItems.length > 0) {
+      setSelectedTenants(deployableItems);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedTenants([]);
+  };
+
+  const handleSuccess = () => {
+    // Optionally trigger a refresh or show success message
+    console.log("Deployment triggered successfully");
+    setTableSelection(new Set());
+  };
+
+  // Get selected tenant IDs
+  const getSelectedTenantIds = (): number | number[] => {
+    const ids = selectedTenants.map((tenant) => tenant.id);
+    return ids.length === 1 ? ids[0] : ids;
+  };
+
+  // Get selected tenant names
+  const getSelectedTenantNames = (): string | string[] => {
+    const names = selectedTenants.map((tenant) => tenant.name);
+    return names.length === 1 ? names[0] : names;
+  };
+
+  // Check if there are any deployable items in selection
+  const hasDeployableSelection = () => {
+    return tenantReleaseData.some(
+      (item) =>
+        tableSelection.has(item.id) &&
+        (item.status === TenantReleaseStatusEnum.Pending ||
+          item.status === TenantReleaseStatusEnum.Failed),
+    );
+  };
+
+  // Get count of deployable items
+  const getDeployableCount = () => {
+    return tenantReleaseData.filter(
+      (item) =>
+        tableSelection.has(item.id) &&
+        (item.status === TenantReleaseStatusEnum.Pending ||
+          item.status === TenantReleaseStatusEnum.Failed),
+    ).length;
+  };
 
   //dynamic and customize cell rendering
   const renderCustomCell = useCallback(
@@ -70,6 +139,7 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
                 <CustomButton
                   startContent={<ReactIcons.Play />}
                   className="bg-focus"
+                  onClick={() => handleDeployClick(item)}
                 >
                   {t("Deploy")}
                 </CustomButton>
@@ -85,6 +155,7 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
                 <CustomButton
                   color={CustomColor.danger}
                   startContent={<ReactIcons.Refresh />}
+                  onClick={() => handleDeployClick(item)}
                 >
                   {t("Retry")}
                 </CustomButton>
@@ -106,20 +177,44 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
           return cellValue;
       }
     },
-    [],
+    [t],
   );
 
   return (
-    <CustomTable
-      columns={tableHeader}
-      data={tenantReleaseData}
-      rowKey="id"
-      isHeaderSticky={true}
-      renderCustomCell={renderCustomCell}
-      removeWrapper={true}
-      selectionMode={TableSelectionModeEnum.Multiple}
-      onSelectionChange={(value) => console.log("valuue=>", value)}
-    />
+    <>
+      {/* Bulk Deploy Button - Shows when items are selected */}
+      {tableSelection.size > 0 && hasDeployableSelection() && (
+        <div className="mb-4 flex justify-end">
+          <CustomButton
+            startContent={<ReactIcons.Play />}
+            className="bg-focus"
+            onClick={handleMultipleDeployClick}
+          >
+            {t("Deploy")} ({getDeployableCount()})
+          </CustomButton>
+        </div>
+      )}
+      <CustomTable
+        columns={tableHeader}
+        data={tenantReleaseData}
+        rowKey="id"
+        isHeaderSticky={true}
+        renderCustomCell={renderCustomCell}
+        removeWrapper={true}
+        selectionMode={TableSelectionModeEnum.Multiple}
+        selectedValue={tableSelection}
+        onSelectionChange={(value) => setTableSelection(value)}
+      />
+      {selectedTenants.length > 0 && (
+        <AzureTokenModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          tenantId={getSelectedTenantIds()}
+          tenantName={getSelectedTenantNames()}
+          onSuccess={handleSuccess}
+        />
+      )}
+    </>
   );
 };
 

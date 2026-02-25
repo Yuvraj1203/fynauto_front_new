@@ -1,6 +1,6 @@
 "use client";
 import { ReactIcons } from "@/public";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Input } from "@heroui/react";
 import { useCallback, useEffect, useState } from "react";
 import { ColorPopoverProps } from "./SegmentButtons";
@@ -27,7 +27,7 @@ const HexInputDiv = ({ colorValue, setColorValue }: ColorPopoverProps) => {
     ) {
       setColorValue(trimmed);
     } else {
-      showSnackbar("Please input valid HEX", "warning");
+      showSnackbar("Please input valid HEX", SnackbarEnum.Warning);
     }
   }, [inputValue, colorValue, setColorValue]);
 

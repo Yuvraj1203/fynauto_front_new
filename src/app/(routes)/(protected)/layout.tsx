@@ -4,7 +4,7 @@ import ProtectedRoute from "./(protectedProvider)/protectedRoute";
 
 const layout = ({ children }: LayoutTypes) => {
   return (
-    <div className="flex gap-5 px-5 xl:px-8 w-full">
+    <div className="flex gap-5 px-3 xl:px-5 w-full">
       <ProtectedRoute>
         <Sidebar fromLayout={true} />
         <div className="grow flex flex-col h-dvh">

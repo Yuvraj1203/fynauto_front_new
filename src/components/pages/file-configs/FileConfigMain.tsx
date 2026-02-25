@@ -11,7 +11,7 @@ import {
   useCurrentTenantInfoStore,
   useTenantDataStore,
 } from "@/store/zustandStore";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Button } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -124,7 +124,7 @@ const FileConfigMain = ({ handleProceed }: FileConfigMainProps) => {
 
   const handleSubmit = () => {
     if (files.length == 0) {
-      showSnackbar("Please upload files", "warning");
+      showSnackbar("Please upload files", SnackbarEnum.Warning);
       return;
     }
 
@@ -167,12 +167,12 @@ const FileConfigMain = ({ handleProceed }: FileConfigMainProps) => {
     },
     onSuccess(data, variables, context) {
       if (data.result) {
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
         handleProceed();
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 
@@ -193,11 +193,11 @@ const FileConfigMain = ({ handleProceed }: FileConfigMainProps) => {
     },
     onSuccess(data, variables, context) {
       if (data.result) {
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 

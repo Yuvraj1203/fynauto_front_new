@@ -1,7 +1,7 @@
 "use client";
 import { CustomImage } from "@/components/custom";
 import { ReactIcons } from "@/public";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Button } from "@heroui/react";
 import React, {
   ChangeEvent,
@@ -39,7 +39,7 @@ const ImageDropBox: FC<FileDropZoneProps> = ({
     if (!isValid) {
       showSnackbar(
         `File "${file.name}" is not a valid format (${extensions?.join(", ")})`,
-        "warning",
+        SnackbarEnum.Warning,
       );
     }
 
@@ -66,7 +66,7 @@ const ImageDropBox: FC<FileDropZoneProps> = ({
         if (width > maxWidth || height > maxHeight) {
           showSnackbar(
             `Image resolution too high (${width}x${height}). Max allowed: ${maxWidth}x${maxHeight}`,
-            "warning",
+            SnackbarEnum.Warning,
           );
           return;
         }

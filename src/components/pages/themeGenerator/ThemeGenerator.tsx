@@ -13,7 +13,7 @@ import {
   generateColorScheme,
   getContrastText,
 } from "@/utils/generateColorScheme";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
@@ -454,7 +454,7 @@ const ThemeGenerator = ({ handleProceed }: ThemeGeneratorProps) => {
     },
     onSuccess(data, variables, context) {
       if (data.result) {
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
         handleProceed();
       }
     },

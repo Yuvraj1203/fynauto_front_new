@@ -1,6 +1,6 @@
 "use client";
 import { ReactIcons } from "@/public";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import React, {
   ChangeEvent,
   Dispatch,
@@ -36,7 +36,7 @@ const FontDropBox: FC<FileDropZoneProps> = ({
     if (!isValid) {
       showSnackbar(
         `File "${file.name}" is not a valid format (${extensions?.join(", ")})`,
-        "warning",
+        SnackbarEnum.Warning,
       );
     }
 

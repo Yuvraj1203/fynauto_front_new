@@ -9,7 +9,7 @@ import { SetTenantInfoModel } from "@/services/models";
 import { UserRoleEnum } from "@/services/models/loginModel/loginModel";
 import { useTenantDataStore, useUserStore } from "@/store/zustandStore";
 import useCurrentTenantInfoStore from "@/store/zustandStore/currentTenantInfoStore/currentTenantInfoStore";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -143,9 +143,11 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
   };
 
   const onSubmit = (data: FormSchema) => {
-    console.log("data====>", methods.getValues());
     if (userStore.role == UserRoleEnum.viewer) {
-      showSnackbar("You dont have creating tenant permissions!", "warning");
+      showSnackbar(
+        "You dont have creating tenant permissions!",
+        SnackbarEnum.Warning,
+      );
     } else if (userStore.role == UserRoleEnum.devcreator) {
       if (
         selectedEnvironment?.key == EnvKeyEnum.uat ||
@@ -153,7 +155,7 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
       ) {
         showSnackbar(
           "You can only create tenant for development environment, please select dev in environment!",
-          "warning",
+          SnackbarEnum.Warning,
         );
       } else {
         SetTenantInfoApi.mutate(data);
@@ -162,7 +164,7 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
       if (selectedEnvironment?.key == EnvKeyEnum.prod) {
         showSnackbar(
           "You can not create tenant for prod environment, please select other than prod in environment!",
-          "warning",
+          SnackbarEnum.Warning,
         );
       } else {
         SetTenantInfoApi.mutate(data);
@@ -192,12 +194,12 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
         useTenantDataStore
           .getState()
           .setTenantFormInfo(data.result.tenantFormData!);
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
         handleProceed();
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 

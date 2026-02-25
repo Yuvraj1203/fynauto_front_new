@@ -8,7 +8,7 @@ import {
   useCurrentTenantInfoStore,
   useTenantDataStore,
 } from "@/store/zustandStore";
-import { base64ToFile, showSnackbar } from "@/utils/utils";
+import { base64ToFile, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Tooltip } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -57,7 +57,7 @@ const IconGenerator = ({ handleProceed }: IconGeneratorProps) => {
       appBannerFile.length == 0 ||
       notificationIconFile.length == 0
     ) {
-      showSnackbar("Please upload icons and images", "warning");
+      showSnackbar("Please upload icons and images", SnackbarEnum.Warning);
       return;
     }
     const formData = new FormData();
@@ -137,12 +137,12 @@ const IconGenerator = ({ handleProceed }: IconGeneratorProps) => {
         } else {
           tenantDataStore.setIconsData([]);
         }
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
         handleProceed();
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 

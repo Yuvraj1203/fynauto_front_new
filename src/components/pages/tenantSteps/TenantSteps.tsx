@@ -6,7 +6,12 @@ import {
   useCurrentTenantInfoStore,
   useTenantDataStore,
 } from "@/store/zustandStore";
-import { base64ToFile, proceedStepsStatus, showSnackbar } from "@/utils/utils";
+import {
+  base64ToFile,
+  proceedStepsStatus,
+  showSnackbar,
+  SnackbarEnum,
+} from "@/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -82,7 +87,7 @@ const TenantSteps = ({ tenancyName, tenantId }: TenantStepsProps) => {
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 
@@ -252,7 +257,7 @@ const TenantSteps = ({ tenancyName, tenantId }: TenantStepsProps) => {
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 

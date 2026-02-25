@@ -1,0 +1,390 @@
+"use client";
+
+import {
+  ButtonVariant,
+  CustomAutoComplete,
+  CustomButton,
+  CustomCheckbox,
+  CustomCheckboxGroup,
+  CustomInput,
+  CustomModal,
+  CustomRadioGroup,
+  InputTypes,
+} from "@/components/custom";
+import { CheckboxOrientation } from "@/components/custom/customCheckboxGroup/customCheckboxGroup";
+import { ApiConstants } from "@/services/apiConstants";
+import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
+import { CustomColor } from "@/services/types";
+import { useGitCredStore } from "@/store/zustandStore";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
+import { useMutation } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+
+type AzureTokenModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  tenantId: number | number[];
+  tenantName: string | string[];
+  onSuccess: () => void;
+};
+
+// OS options
+const osOptions = [
+  { id: "android", value: "Android" },
+  { id: "ios", value: "iOS" },
+];
+
+// Deployment type options
+const deploymentTypeOptions = [
+  { id: "production", value: "Production" },
+  { id: "external", value: "External Testers" },
+  { id: "internal", value: "Internal Testers" },
+];
+
+// Azure DevOps branch API response type
+type AzureBranchRef = {
+  name: string;
+  objectId: string;
+  url: string;
+};
+
+type AzureBranchResponse = {
+  value: AzureBranchRef[];
+};
+
+const AzureTokenModal = ({
+  isOpen,
+  onClose,
+  tenantId,
+  tenantName,
+  onSuccess,
+}: AzureTokenModalProps) => {
+  const [azureGitToken, setAzureGitToken] = useState("");
+  const [bearerToken, setBearerToken] = useState("");
+  const [branchName, setBranchName] = useState<string | number>("");
+  const [selectedOS, setSelectedOS] = useState<string[]>([]);
+  const [deploymentType, setDeploymentType] = useState<string>("");
+  const [buildApk, setBuildApk] = useState(false);
+  const [buildIpa, setBuildIpa] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  //git token for azure devops API call to fetch branches
+  const gitToken = useGitCredStore().gitCred;
+  const gitTokenExpiry = useGitCredStore().gitCredExpiry;
+  const azureBearerToken = useGitCredStore().azureBearer;
+  const azureBearerTokenExpiry = useGitCredStore().azureBearerExpiry;
+
+  // Branch list state - fetched from Azure DevOps
+  const [branchList, setBranchList] = useState<
+    { key: string; label: string }[]
+  >([]);
+
+  const isMultipleSelection = Array.isArray(tenantId);
+
+  const checkHasValidDate = (expiry: number) => {
+    return expiry && new Date(expiry) > new Date();
+  };
+
+  //check if the git token valid
+  useEffect(() => {
+    const isGitTokenValid = checkHasValidDate(gitTokenExpiry);
+    const isAzureBearerValid = checkHasValidDate(azureBearerTokenExpiry);
+
+    setAzureGitToken(gitToken);
+    setBearerToken(azureBearerToken);
+    if (!isGitTokenValid || !isAzureBearerValid) {
+      setError(
+        `${!isGitTokenValid ? "Git token may be expired." : ""} ${!isAzureBearerValid ? "Azure bearer token may be expired." : ""} Please update from settings in sidebar.`,
+      );
+    }
+  }, []);
+
+  // Fetch branches when modal opens and token is available
+  useEffect(() => {
+    if (isOpen && azureGitToken.trim()) {
+      GetAzureBranchesApi.mutate(azureGitToken);
+    }
+  }, [isOpen, azureGitToken]);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        // const responseMatchBranch = await apiCall(
+        //   "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/git/repositories/fyn_sample_repo_pipline/refs?filter=heads/&api-version=7.1-preview.1",
+        //   "GET",
+        //   {}
+        // );
+        // setMatchBranches(
+        //   responseMatchBranch.value.map((item: any) => ({
+        //     label: item.name,
+        //     value: item.name,
+        //   }))
+        // );
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+      }
+    };
+    // fetchBranches();
+  }, [azureGitToken]);
+
+  // Fetch branches from Azure DevOps using useMutation
+  const GetAzureBranchesApi = useMutation({
+    mutationFn: (token: string) => {
+      return makeRequest<AzureBranchResponse>({
+        url: ApiConstants.GetAllBranchesFromAzure,
+        method: HttpMethodApi.Get,
+        data: { token },
+        withoutBaseModel: true,
+      }); // API Call
+    },
+    onMutate(variables) {
+      // setLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      // setLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      if (data?.value) {
+        setBranchList(
+          data.value.map((item: any) => {
+            const branchName = item.name.replace("refs/heads/", ""); // Remove refs/heads/ prefix
+            return {
+              label: branchName,
+              value: branchName,
+              key: branchName,
+            };
+          }),
+        );
+      }
+    },
+    onError() {
+      // Keep initial branch list as fallback on error
+      showSnackbar(
+        "Failed to fetch branches from Azure DevOps",
+        SnackbarEnum.Danger,
+      );
+    },
+  });
+
+  const handleRun = async () => {
+    // Validation
+    if (!azureGitToken.trim()) {
+      setError("Azure token is required");
+      return;
+    }
+    if (!branchName) {
+      setError("Branch name is required");
+      return;
+    }
+    if (selectedOS.length === 0) {
+      setError("Please select at least one OS");
+      return;
+    }
+    if (!deploymentType) {
+      setError("Please select deployment type");
+      return;
+    }
+    if (deploymentType !== "internal" && !buildApk && !buildIpa) {
+      setError("Please select at least one build option");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Handle both single and multiple tenant deployment
+      const tenantIds = Array.isArray(tenantId) ? tenantId : [tenantId];
+
+      for (const id of tenantIds) {
+        const response = await fetch(
+          "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/pipelines/103/runs?api-version=7.1-preview.1",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${bearerToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              resources: {
+                repositories: {
+                  self: {
+                    refName: `refs/heads/${branchName}`,
+                  },
+                },
+              },
+              templateParameters: JSON.stringify({
+                tenant: tenantName,
+                android: selectedOS.includes("android") ? "true" : "false",
+                ios: selectedOS.includes("ios") ? "true" : "false",
+                production: deploymentType === "production" ? "true" : "false",
+                externalTester:
+                  deploymentType === "external" ? "true" : "false",
+                buildApk: buildApk,
+                buildIpa: buildIpa,
+                azureGitToken: azureGitToken,
+              }),
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          setError(`Failed to trigger Azure pipeline for tenant ID: ${id}`);
+          setLoading(false);
+          return;
+        }
+      }
+
+      onSuccess();
+      handleClose();
+    } catch (err) {
+      setError("An error occurred while calling the API.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setAzureGitToken("");
+    setBranchName("");
+    setSelectedOS([]);
+    setDeploymentType("");
+    setBuildApk(false);
+    setBuildIpa(false);
+    setError("");
+    setBranchList([]);
+    onClose();
+  };
+
+  // Title for the modal
+  const modalTitle = isMultipleSelection
+    ? `Deploy ${tenantName.length} Tenants`
+    : `Deploy Tenant: ${tenantName}`;
+
+  return (
+    <CustomModal
+      isOpen={isOpen}
+      onOpenChange={(open) => !open && handleClose()}
+      trigger={<button className="hidden" />}
+      closeButton={false}
+      loading={loading}
+      wrapperStyle="max-w-2xl"
+    >
+      {() => (
+        <div className="flex flex-col gap-4 py-2">
+          {/* Modal Header */}
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold">{modalTitle}</h2>
+          </div>
+
+          {/* Azure Token Input */}
+          <CustomInput
+            label="Azure Token"
+            placeholder="Enter your Azure DevOps personal access token"
+            value={azureGitToken}
+            onValueChange={(value) => {
+              setAzureGitToken(value);
+              setError("");
+            }}
+            isInvalid={!!error && error.includes("token")}
+            description={
+              error.includes("token")
+                ? error
+                : "Required for Azure DevOps pipeline authentication"
+            }
+            type={InputTypes.password}
+          />
+
+          {/* Branch Name Autocomplete */}
+
+          <CustomAutoComplete
+            items={branchList}
+            label="Branch Name"
+            placeholder="Select or enter branch name"
+            defaultSelectedItem={branchName}
+            onSelection={(value) => {
+              setBranchName(value);
+              setError("");
+            }}
+            isRequired
+            className="max-w-full"
+          />
+
+          {/* OS Selection - Android/iOS */}
+          <CustomCheckboxGroup
+            data={osOptions}
+            id="id"
+            value="value"
+            label="Select OS"
+            selectedValue={selectedOS}
+            setSelectedValue={(value) => {
+              setSelectedOS(value);
+              setError("");
+            }}
+            orientation={CheckboxOrientation.horizontal}
+          />
+
+          {/* Build Options - Build APK, Build IPA */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-secondary-text">
+              Build Options
+            </label>
+            <div className="flex gap-4">
+              <CustomCheckbox
+                isSelected={buildApk}
+                setIsSelected={(value) => {
+                  setBuildApk(value);
+                  setError("");
+                }}
+                label="Build APK"
+              />
+              <CustomCheckbox
+                isSelected={buildIpa}
+                setIsSelected={(value) => {
+                  setBuildIpa(value);
+                  setError("");
+                }}
+                label="Build IPA"
+              />
+            </div>
+          </div>
+
+          {/* Deployment Type - Production, External Testers, Internal Testers */}
+          {(!buildApk || !buildIpa) && (
+            <CustomRadioGroup
+              data={deploymentTypeOptions}
+              id="id"
+              value="value"
+              label={`Deployment Type (${buildApk ? "" : "Android"} ${buildIpa ? "" : "iOS"})`}
+              selectedValue={deploymentType}
+              setSelectedValue={(value) => {
+                setDeploymentType(value);
+                setError("");
+              }}
+            />
+          )}
+
+          {/* Error Message */}
+          {error && <p className="text-danger text-sm">{error}</p>}
+
+          {/* Footer Buttons */}
+          <div className="flex justify-end gap-2 pt-4">
+            <CustomButton
+              color={CustomColor.danger}
+              variant={ButtonVariant.light}
+              onClick={handleClose}
+            >
+              Close
+            </CustomButton>
+            <CustomButton loading={loading} onClick={handleRun}>
+              Deploy
+            </CustomButton>
+          </div>
+        </div>
+      )}
+    </CustomModal>
+  );
+};
+
+export default AzureTokenModal;

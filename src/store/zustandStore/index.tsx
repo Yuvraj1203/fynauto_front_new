@@ -1,4 +1,5 @@
 export { default as useCurrentTenantInfoStore } from "./currentTenantInfoStore/currentTenantInfoStore";
+export { default as useGitCredStore } from "./gitCredStore/gitCredStore";
 export { default as useLocalAuthStore } from "./localAuthStore/localAuthStore";
 export { default as useSidebarStateStore } from "./sidebarStateStore/sidebarStateStore";
 export { default as useSidebarStore } from "./sidebarStore/sidebarStore";

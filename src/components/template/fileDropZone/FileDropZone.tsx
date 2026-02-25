@@ -2,7 +2,7 @@
 
 import { ReactIcons } from "@/public";
 import { useTenantDataStore } from "@/store/zustandStore";
-import { showSnackbar } from "@/utils/utils";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import React, {
   ChangeEvent,
   Dispatch,
@@ -43,7 +43,7 @@ const FileDropZone: FC<FileDropZoneProps> = ({
     if (!isValid) {
       showSnackbar(
         `File "${file.name}" is not a valid format (${extensions?.join(", ")})`,
-        "warning",
+        SnackbarEnum.Warning,
       );
     }
 

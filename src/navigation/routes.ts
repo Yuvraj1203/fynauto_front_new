@@ -14,6 +14,7 @@ export const Routes = {
     // createCaptureForm: (formId: "new-form" | number) =>
     //   `/capture-tool/${formId}`,
     releaseTable: "/release-table",
+    settings: "/settings",
   },
 
   noRedirection: "/#",

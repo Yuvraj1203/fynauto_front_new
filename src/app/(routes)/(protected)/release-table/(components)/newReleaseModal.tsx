@@ -52,7 +52,7 @@ const NewReleaseModal = ({ setRefreshList }: NewReleaseModalProps) => {
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, SnackbarEnum.danger);
+      showSnackbar(error.message, SnackbarEnum.Danger);
       setError("An error occurred while creating release version");
     },
   });

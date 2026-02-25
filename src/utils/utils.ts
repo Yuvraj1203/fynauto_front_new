@@ -4,13 +4,13 @@ import { addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
 export enum SnackbarEnum {
-  "success" = "success",
-  "default" = "default",
-  "foreground" = "foreground",
-  "primary" = "primary",
-  "secondary" = "secondary",
-  "warning" = "warning",
-  "danger" = "danger",
+  Success = "success",
+  Default = "default",
+  Foreground = "foreground",
+  Primary = "primary",
+  Secondary = "secondary",
+  Warning = "warning",
+  Danger = "danger",
 }
 
 //********************** toast types and enums START ************/

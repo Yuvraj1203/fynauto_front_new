@@ -9,7 +9,7 @@ import {
   useCurrentTenantInfoStore,
   useTenantDataStore,
 } from "@/store/zustandStore";
-import { base64ToFile, showSnackbar } from "@/utils/utils";
+import { base64ToFile, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Tooltip } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { Playfair_Display, Roboto, Signika_Negative } from "next/font/google";
@@ -122,7 +122,7 @@ const FontsUpload = ({ handleProceed }: FontsUploadProps) => {
 
   const handleSubmit = () => {
     if (!selectedFont?.key)
-      return showSnackbar("Please select the font", "warning");
+      return showSnackbar("Please select the font", SnackbarEnum.Warning);
     const formData = new FormData();
 
     if (selectedFont?.key == FontFamilyEnum.other) {
@@ -131,7 +131,7 @@ const FontsUpload = ({ handleProceed }: FontsUploadProps) => {
         regularFontFile.length == 0 &&
         boldFontFile.length == 0
       ) {
-        showSnackbar("Please upload files", "warning");
+        showSnackbar("Please upload files", SnackbarEnum.Warning);
         return;
       }
 
@@ -182,7 +182,7 @@ const FontsUpload = ({ handleProceed }: FontsUploadProps) => {
     },
     onSuccess(data, variables, context) {
       if (data.result) {
-        showSnackbar(data.result.message, "success");
+        showSnackbar(data.result.message, SnackbarEnum.Success);
         if (data.result.fontsData?.id) {
           const fontName = data.result.fontsData.defaultFontName;
           const fileConfigs = data.result.fontsData.files; //files
@@ -235,7 +235,7 @@ const FontsUpload = ({ handleProceed }: FontsUploadProps) => {
       }
     },
     onError(error, variables, context) {
-      showSnackbar(error.message, "danger");
+      showSnackbar(error.message, SnackbarEnum.Danger);
     },
   });
 

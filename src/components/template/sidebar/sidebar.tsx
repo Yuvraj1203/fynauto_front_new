@@ -21,6 +21,11 @@ const navList = [
     icon: <ReactIcons.List size={24} className="p-0.5" />,
     href: Routes.protected.releaseTable,
   },
+  {
+    label: "Settings",
+    icon: <ReactIcons.Setting size={24} className="p-0.5" />,
+    href: Routes.protected.settings,
+  },
 ];
 
 type SidebarProps = {

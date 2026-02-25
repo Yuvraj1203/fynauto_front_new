@@ -1,6 +1,7 @@
 import { NEXT_PUBLIC_API_BASE_URL } from "@/config/environment";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { apiCall } from "./apiCall";
 import { BaseModel } from "./models";
 
 export enum HttpMethodApi {
@@ -12,12 +13,13 @@ export enum HttpMethodApi {
 }
 
 export type RequestOptions = {
-  endpoint: string;
+  endpoint?: string;
   method: HttpMethodApi;
   params?: Record<string, any>;
   data?: Record<string, any> | FormData;
   headers?: Record<string, string>;
   withoutBaseModel?: boolean;
+  url?: string;
 };
 
 const axiosClient = axios.create({
@@ -133,9 +135,15 @@ export async function makeRequest<T>({
   params,
   headers = {},
   withoutBaseModel = false,
+  url = undefined,
 }: RequestOptions): Promise<BaseModel<T> | T> {
   try {
     const isForm = data instanceof FormData;
+
+    if (url) {
+      const response = await apiCall(url, method, data);
+      return response;
+    }
 
     // const token = Cookies.get("accessTokenFyn");
 

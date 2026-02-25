@@ -4,7 +4,7 @@ import { CustomSpinner } from "@/components/custom";
 import { useSidebarStore } from "@/store/zustandStore";
 import {
   getKeyValue,
-  Selection,
+  SharedSelection,
   Table,
   TableBody,
   TableCell,
@@ -25,7 +25,9 @@ export enum TableSelectionModeEnum {
   Multiple = "multiple",
 }
 
-type CustomTableProps<T> = {
+type Primitive = string | number;
+
+type CustomTableProps<T extends object, V extends Primitive = string> = {
   columns?: Column<T>[];
   data: T[];
   loading?: boolean;
@@ -45,10 +47,12 @@ type CustomTableProps<T> = {
     columnKey: keyof T,
   ) => string | number | ReactNode;
   selectionMode?: TableSelectionModeEnum;
-  onSelectionChange?: ((keys: Selection) => void) | undefined;
+  selectedValue?: V | V[];
+  defaultSelectedValue?: V | V[];
+  onSelectionChange?: (value: Primitive | Primitive[]) => void;
 };
 
-const CustomTable = <T extends object>({
+const CustomTable = <T extends object, V extends Primitive = string>({
   columns,
   data,
   loading = false,
@@ -58,6 +62,26 @@ const CustomTable = <T extends object>({
 }: CustomTableProps<T>) => {
   const t = useTranslations();
   const sidebarState = useSidebarStore((state) => state.sidebarState);
+
+  // Normalize incoming value(s) → string keys for Select
+  const selectedKeys =
+    props.selectedValue === undefined
+      ? undefined
+      : Array.isArray(props.selectedValue)
+        ? props.selectedValue.map(String)
+        : [String(props.selectedValue)];
+
+  const defaultSelectedKeys =
+    props.defaultSelectedValue === undefined
+      ? undefined
+      : Array.isArray(props.defaultSelectedValue)
+        ? props.defaultSelectedValue.map(String)
+        : [String(props.defaultSelectedValue)];
+
+  const isNumberValue =
+    typeof props.selectedValue === "number" ||
+    (Array.isArray(props.selectedValue) &&
+      typeof props.selectedValue[0] === "number");
 
   // Auto-generate header/columns if none provided
   const autoColumns: Column<T>[] =
@@ -97,7 +121,34 @@ const CustomTable = <T extends object>({
       isHeaderSticky={props.isHeaderSticky}
       isStriped={props.isStriped}
       selectionMode={props.selectionMode}
-      onSelectionChange={props.onSelectionChange}
+      selectedKeys={selectedKeys}
+      defaultSelectedKeys={defaultSelectedKeys}
+      onSelectionChange={(selection: SharedSelection) => {
+        console.log("Selected keys:", selectedKeys, "Selection:", selection);
+        if (selection === "all") {
+          if (selectedKeys && selectedKeys[0] === "all") {
+            props.onSelectionChange?.([]);
+          } else {
+            props.onSelectionChange?.(["all"]);
+          }
+          return;
+        }
+        const keys = Array.from(selection);
+        const parsedValues = keys.map((k) =>
+          isNumberValue ? (Number(k) as V) : (String(k) as V),
+        );
+
+        if (parsedValues.length === 0) {
+          return;
+        }
+
+        const value: Primitive | Primitive[] =
+          props.selectionMode === TableSelectionModeEnum.Multiple
+            ? parsedValues
+            : parsedValues[0];
+
+        props.onSelectionChange?.(value);
+      }}
       isCompact={props.isCompact}
       removeWrapper={props.removeWrapper}
       classNames={{

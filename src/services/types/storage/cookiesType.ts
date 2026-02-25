@@ -6,6 +6,7 @@ export enum CookiesType {
   isAuthEnable = "isAuthEnable",
   isAuthenticated = "isAuthenticated",
   localAuth = "localAuth",
+  gitCred = "gitCred",
 }
 
 export enum themeEnum {
