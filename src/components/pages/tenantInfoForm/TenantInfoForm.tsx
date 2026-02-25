@@ -1,15 +1,19 @@
 // app/components/MyZodForm.tsx
 "use client";
 
-import { ProceedButton } from "@/components/common";
+import { ProceedButton, Text, TextVariant } from "@/components/common";
 import { FormTextInput, FormTextInputType } from "@/components/custom";
 import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
 import { SetTenantInfoModel } from "@/services/models";
 import { UserRoleEnum } from "@/services/models/loginModel/loginModel";
-import { useTenantDataStore, useUserStore } from "@/store/zustandStore";
+import {
+  useGitCredStore,
+  useTenantDataStore,
+  useUserStore,
+} from "@/store/zustandStore";
 import useCurrentTenantInfoStore from "@/store/zustandStore/currentTenantInfoStore/currentTenantInfoStore";
-import { showSnackbar, SnackbarEnum } from "@/utils/utils";
+import { checkHasValidDate, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -67,6 +71,35 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
     SelectedEnvironmentType | undefined
   >(envDropDown[0]);
 
+  const [selectedTeam, setSelectedTeam] = useState<{
+    key: string;
+    label: string;
+  }>();
+
+  const [teamDropdown, setTeamDropdown] = useState<
+    { key: string; label: string }[]
+  >([]);
+  const [bearerTokenError, setBearerTokenError] = useState("");
+
+  const azureBearerToken = useGitCredStore((state) => state.azureBearer);
+  const azureBearerTokenExpiry = useGitCredStore(
+    (state) => state.azureBearerExpiry,
+  );
+
+  //check if the git token valid
+  useEffect(() => {
+    const isAzureBearerValid = checkHasValidDate(azureBearerTokenExpiry);
+
+    if (!isAzureBearerValid) {
+      setBearerTokenError(
+        `Azure bearer token may be expired.Please update from settings in sidebar.`,
+      );
+    }
+    if (azureBearerToken) {
+      GetMatchBranchesApi.mutate(azureBearerToken);
+    }
+  }, [azureBearerToken]);
+
   useEffect(() => {
     const envObject = envDropDown.find(
       (item) => item.ApiUrl == tenantFormInfo?.apiUrl,
@@ -97,8 +130,7 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
       .min(1, "Bundle Id is required")
       .trim()
       .regex(/^com\./, "Invalid Bundle Id"),
-    oktaClientId: z.string().trim().optional(),
-    oktaDomain: z.string().trim().optional(),
+    matchBranch: z.string().trim().optional(),
     packageName: z
       .string()
       .min(1, "Package Name is required")
@@ -128,8 +160,7 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
       iosVersionCode: tenantFormInfo?.iosVersionCode,
       iosVersionName: tenantFormInfo?.iosVersionName,
       bundleId: tenantFormInfo?.bundleId ?? "",
-      oktaClientId: tenantFormInfo?.oktaClientId ?? "",
-      oktaDomain: tenantFormInfo?.oktaDomain ?? "",
+      matchBranch: tenantFormInfo?.matchBranch ?? "",
       packageName: tenantFormInfo?.packageName ?? "",
       sentryDsn: tenantFormInfo?.sentryDsn ?? "",
     },
@@ -140,6 +171,18 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
     const selectedEnv = envDropDown.find((item, index) => item.key == value);
     setSelectedEnvironment(selectedEnv);
     methods.setValue("apiUrl", selectedEnv?.ApiUrl!);
+  };
+
+  const handleSelectTeamChange = (value: string | number) => {
+    if (teamDropdown) {
+      const selectedTeam = teamDropdown.find(
+        (item, index) => item.key == value,
+      );
+      if (selectedTeam) {
+        setSelectedTeam(selectedTeam);
+      }
+      methods.setValue("matchBranch", selectedTeam?.key ?? "");
+    }
   };
 
   const onSubmit = (data: FormSchema) => {
@@ -173,6 +216,44 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
       SetTenantInfoApi.mutate(data);
     }
   };
+
+  // Fetch branches from Azure DevOps using useMutation
+  const GetMatchBranchesApi = useMutation({
+    mutationFn: (token: string) => {
+      return makeRequest<any>({
+        url: ApiConstants.GetMatchBranches,
+        method: HttpMethodApi.Get,
+        data: { token },
+        withoutBaseModel: true,
+      }); // API Call
+    },
+    onMutate(variables) {
+      // setLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      // setLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      if (data?.value) {
+        setTeamDropdown(
+          data.value.map((item: any) => {
+            const matchBranchName = item.name.replace("refs/heads/", "");
+            return {
+              label: matchBranchName,
+              key: matchBranchName,
+            };
+          }),
+        );
+      }
+    },
+    onError() {
+      // Keep initial branch list as fallback on error
+      showSnackbar(
+        "Failed to fetch branches from Azure DevOps",
+        SnackbarEnum.Danger,
+      );
+    },
+  });
 
   //set tenant info api
   const SetTenantInfoApi = useMutation({
@@ -316,10 +397,20 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
             />
           </div>
 
-          <div className="flex gap-5 max-md:flex-col">
-            <FormTextInput name="oktaClientId" label="Okta ClientId" />
-            <FormTextInput name="oktaDomain" label="Okta Domain" />
-          </div>
+          <FormTextInput
+            name="matchBranch"
+            label="Team"
+            type={FormTextInputType.select}
+            displayKey={"label"}
+            selectItems={teamDropdown}
+            selectedValue={selectedTeam}
+            isRequired={true}
+            handleSelectItemChange={handleSelectTeamChange}
+          />
+
+          {bearerTokenError && (
+            <Text variant={TextVariant.caption}>{bearerTokenError}</Text>
+          )}
         </div>
 
         <ProceedButton

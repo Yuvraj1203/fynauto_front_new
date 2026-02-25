@@ -16,7 +16,7 @@ import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
 import { CustomColor } from "@/services/types";
 import { useGitCredStore } from "@/store/zustandStore";
-import { showSnackbar, SnackbarEnum } from "@/utils/utils";
+import { checkHasValidDate, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -82,10 +82,6 @@ const AzureTokenModal = ({
 
   const isMultipleSelection = Array.isArray(tenantId);
 
-  const checkHasValidDate = (expiry: number) => {
-    return expiry && new Date(expiry) > new Date();
-  };
-
   //check if the git token valid
   useEffect(() => {
     const isGitTokenValid = checkHasValidDate(gitTokenExpiry);
@@ -106,27 +102,6 @@ const AzureTokenModal = ({
       GetAzureBranchesApi.mutate(azureGitToken);
     }
   }, [isOpen, azureGitToken]);
-
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        // const responseMatchBranch = await apiCall(
-        //   "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/git/repositories/fyn_sample_repo_pipline/refs?filter=heads/&api-version=7.1-preview.1",
-        //   "GET",
-        //   {}
-        // );
-        // setMatchBranches(
-        //   responseMatchBranch.value.map((item: any) => ({
-        //     label: item.name,
-        //     value: item.name,
-        //   }))
-        // );
-      } catch (error) {
-        console.error("Error fetching branches:", error);
-      }
-    };
-    // fetchBranches();
-  }, [azureGitToken]);
 
   // Fetch branches from Azure DevOps using useMutation
   const GetAzureBranchesApi = useMutation({

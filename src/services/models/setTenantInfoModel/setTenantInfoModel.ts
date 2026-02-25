@@ -17,8 +17,7 @@ export type TenantFormDataType = {
   tenancyName?: string;
   tenantId?: string;
   auth0Organization?: string | undefined;
-  oktaClientId?: string | undefined;
-  oktaDomain?: string | undefined;
+  matchBranch?: string | undefined;
 };
 
 type fileConfigsType = {

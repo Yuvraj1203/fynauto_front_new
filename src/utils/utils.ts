@@ -161,3 +161,10 @@ export const proceedStepsStatus = (
 };
 
 //********************** proceedStepsStatus END ************/
+
+//********************** is date expired START ************/
+export const checkHasValidDate = (expiry: number) => {
+  return expiry && new Date(expiry) > new Date();
+};
+
+//********************** is date expired END ************/

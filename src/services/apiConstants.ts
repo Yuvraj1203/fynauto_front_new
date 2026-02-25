@@ -19,5 +19,7 @@ export const ApiConstants = {
   GetAllBranchesFromAzure:
     "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/git/repositories/FynancialReactNativeMobileApp/refs?filter=heads/&api-version=7.1-preview.1",
   // Azure Credentials API
+  GetMatchBranches:
+    "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/git/repositories/fyn_sample_repo_pipline/refs?filter=heads/&api-version=7.1-preview.1",
   GlobalSettings: "api/v1/globalSettings/globalSettings",
 };
