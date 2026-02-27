@@ -22,4 +22,5 @@ export const ApiConstants = {
   GetMatchBranches:
     "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/git/repositories/fyn_sample_repo_pipline/refs?filter=heads/&api-version=7.1-preview.1",
   GlobalSettings: "api/v1/globalSettings/globalSettings",
+  AddCustomTenant: "api/v1/releasesVersion/addCustomTenant",
 };

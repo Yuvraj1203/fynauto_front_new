@@ -43,6 +43,7 @@ import {
   LuTableProperties,
   LuTrash2,
   LuUndo2,
+  LuUserRoundPlus,
 } from "react-icons/lu";
 import {
   MdDragIndicator,
@@ -104,4 +105,5 @@ export const ReactIcons = {
   ArrowRight: LuArrowRight,
   Logout: LuLogOut,
   Play: IoPlayOutline,
+  AddUser: LuUserRoundPlus,
 };

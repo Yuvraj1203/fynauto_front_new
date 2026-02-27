@@ -2,17 +2,22 @@
 import { Text, TextVariant } from "@/components/common";
 import {
   AccordionVariant,
+  ButtonVariant,
   ChipVariant,
   CustomAccordion,
+  CustomButton,
   CustomChip,
+  CustomModal,
   CustomSpinner,
 } from "@/components/custom";
+import { ReactIcons } from "@/public";
 import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
-import { CustomSize } from "@/services/types";
+import { CustomColor, CustomSize } from "@/services/types";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import AddTenantModal from "./AddTenantModal";
 import TenantReleaseTable, { statusColorMap } from "./tenantReleaseTable";
 
 type TenantListAccordiansProps = {
@@ -63,6 +68,8 @@ const TenantListAccordians = ({
   const [releaseVersionData, setReleaseVersionData] = useState<
     ReleaseVersionDataType[]
   >([]);
+  const [isAddTenantModalOpen, setIsAddTenantModalOpen] = useState(false);
+  const [latestReleaseVersion, setLatestReleaseVersion] = useState("");
 
   useEffect(() => {
     GetReleasesVersionApi.mutate({
@@ -100,8 +107,11 @@ const TenantListAccordians = ({
     },
     onSuccess(data, variables, context) {
       if (data.success) {
-        console.log("API Response:", data); // Debug log
         setReleaseVersionData(data.result || []);
+        // Set latest release version from first release
+        if (data.result && data.result.length > 0) {
+          setLatestReleaseVersion(data.result[0].version);
+        }
       }
     },
     onError(error, variables, context) {
@@ -109,9 +119,49 @@ const TenantListAccordians = ({
     },
   });
 
-  const renderContent = (tenantReleaseItem: TenantReleaseDataType[]) => {
-    console.log("Rendering TenantReleaseTable with data:", tenantReleaseItem);
-    return <TenantReleaseTable tenantReleaseData={tenantReleaseItem} />;
+  const handleAddTenantSuccess = () => {
+    // Refresh the list after adding tenant
+    GetReleasesVersionApi.mutate({
+      data: {
+        skipCount: 0,
+      },
+    });
+  };
+
+  const renderContent = (
+    tenantReleaseItem: TenantReleaseDataType[],
+    isFirstAccordion: boolean = false,
+  ) => {
+    return (
+      <div>
+        {isFirstAccordion && (
+          <CustomModal
+            trigger={
+              <CustomButton
+                className="flex justify-self-end"
+                color={CustomColor.default}
+                variant={ButtonVariant.faded}
+                onClick={() => setIsAddTenantModalOpen(true)}
+                startContent={<ReactIcons.AddUser />}
+              >
+                Add Tenant
+              </CustomButton>
+            }
+            closeButton={false}
+            children={(onClose) => {
+              return (
+                <AddTenantModal
+                  releaseVersion={latestReleaseVersion}
+                  onSuccess={handleAddTenantSuccess}
+                  onClose={onClose}
+                />
+              );
+            }}
+          />
+        )}
+        <TenantReleaseTable tenantReleaseData={tenantReleaseItem} />
+      </div>
+    );
   };
 
   const renderStatusChip = (status: number, label: TenantReleaseStatusEnum) => {
@@ -192,10 +242,11 @@ const TenantListAccordians = ({
           contentStyle={"pt-0"}
           variant={AccordionVariant.Splitted}
           className={"px-0"}
-          renderContent={(releaseVersionItem) => {
+          renderContent={(releaseVersionItem, index) => {
             if (!releaseVersionItem.tenants) return null;
             return renderContent(
               releaseVersionItem.tenants as TenantReleaseDataType[],
+              index === 0, // isFirstAccordion
             );
           }}
           renderHeader={(releaseVersionItem) => {

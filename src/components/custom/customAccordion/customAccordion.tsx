@@ -18,7 +18,7 @@ type CustomAccordionProps<T extends object> = {
   baseStyle?: string;
   contentStyle?: string;
   className?: string;
-  renderContent: (item: T) => React.ReactNode;
+  renderContent: (item: T, index: number) => React.ReactNode;
   renderHeader?: (item: T) => React.ReactNode;
 };
 const CustomAccordion = <T extends object>({
@@ -41,7 +41,7 @@ const CustomAccordion = <T extends object>({
             content: props.contentStyle,
           }}
         >
-          {props.renderContent(item)}
+          {props.renderContent(item, index)}
         </AccordionItem>
       ))}
     </Accordion>
