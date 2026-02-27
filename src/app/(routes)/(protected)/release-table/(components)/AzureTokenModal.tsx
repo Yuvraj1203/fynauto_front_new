@@ -19,12 +19,12 @@ import { useGitCredStore } from "@/store/zustandStore";
 import { checkHasValidDate, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { TenantReleaseDataType } from "./tenantListAccordians";
 
 type AzureTokenModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  tenantId: number | number[];
-  tenantName: string | string[];
+  tenants: TenantReleaseDataType | TenantReleaseDataType[];
   onSuccess: () => void;
 };
 
@@ -55,8 +55,7 @@ type AzureBranchResponse = {
 const AzureTokenModal = ({
   isOpen,
   onClose,
-  tenantId,
-  tenantName,
+  tenants,
   onSuccess,
 }: AzureTokenModalProps) => {
   const [azureGitToken, setAzureGitToken] = useState("");
@@ -80,7 +79,7 @@ const AzureTokenModal = ({
     { key: string; label: string }[]
   >([]);
 
-  const isMultipleSelection = Array.isArray(tenantId);
+  const isMultipleSelection = Array.isArray(tenants);
 
   //check if the git token valid
   useEffect(() => {
@@ -156,9 +155,14 @@ const AzureTokenModal = ({
       setError("Please select at least one OS");
       return;
     }
-    if (!deploymentType) {
-      setError("Please select deployment type");
-      return;
+    if (
+      (!buildApk && selectedOS.includes("android")) ||
+      (!buildIpa && selectedOS.includes("ios"))
+    ) {
+      if (!deploymentType) {
+        setError("Please select deployment type");
+        return;
+      }
     }
     if (deploymentType !== "internal" && !buildApk && !buildIpa) {
       setError("Please select at least one build option");
@@ -170,9 +174,34 @@ const AzureTokenModal = ({
 
     try {
       // Handle both single and multiple tenant deployment
-      const tenantIds = Array.isArray(tenantId) ? tenantId : [tenantId];
+      const allTenants = Array.isArray(tenants) ? tenants : [tenants];
 
-      for (const id of tenantIds) {
+      for (const tenant of allTenants) {
+        console.log("can be final=>", {
+          body: {
+            resources: {
+              repositories: {
+                self: {
+                  refName: `refs/heads/${branchName}`,
+                },
+              },
+            },
+            templateParameters: {
+              tenant: tenant.name,
+              android: selectedOS.includes("android") ? "true" : "false",
+              ios: selectedOS.includes("ios") ? "true" : "false",
+              production: deploymentType === "production" ? "true" : "false",
+              externalTester: deploymentType === "external" ? "true" : "false",
+              buildApk: buildApk,
+              buildIpa: buildIpa,
+              azureGitToken: azureGitToken,
+              ...(tenant.matchBranch
+                ? { matchbranch: tenant.matchBranch }
+                : {}),
+            },
+          },
+        });
+        // return;
         const response = await fetch(
           "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/pipelines/103/runs?api-version=7.1-preview.1",
           {
@@ -190,7 +219,7 @@ const AzureTokenModal = ({
                 },
               },
               templateParameters: JSON.stringify({
-                tenant: tenantName,
+                tenant: tenant.name,
                 android: selectedOS.includes("android") ? "true" : "false",
                 ios: selectedOS.includes("ios") ? "true" : "false",
                 production: deploymentType === "production" ? "true" : "false",
@@ -199,13 +228,18 @@ const AzureTokenModal = ({
                 buildApk: buildApk,
                 buildIpa: buildIpa,
                 azureGitToken: azureGitToken,
+                ...(tenant.matchBranch
+                  ? { matchbranch: tenant.matchBranch }
+                  : {}),
               }),
             }),
           },
         );
 
         if (!response.ok) {
-          setError(`Failed to trigger Azure pipeline for tenant ID: ${id}`);
+          setError(
+            `Failed to trigger Azure pipeline for tenant ID: ${tenant.id}`,
+          );
           setLoading(false);
           return;
         }
@@ -234,8 +268,8 @@ const AzureTokenModal = ({
 
   // Title for the modal
   const modalTitle = isMultipleSelection
-    ? `Deploy ${tenantName.length} Tenants`
-    : `Deploy Tenant: ${tenantName}`;
+    ? `Deploy ${tenants.length} Tenants`
+    : `Deploy Tenant: ${tenants.name}`;
 
   return (
     <CustomModal
@@ -272,19 +306,20 @@ const AzureTokenModal = ({
           />
 
           {/* Branch Name Autocomplete */}
-
-          <CustomAutoComplete
-            items={branchList}
-            label="Branch Name"
-            placeholder="Select or enter branch name"
-            defaultSelectedItem={branchName}
-            onSelection={(value) => {
-              setBranchName(value);
-              setError("");
-            }}
-            isRequired
-            className="max-w-full"
-          />
+          {!isMultipleSelection && (
+            <CustomAutoComplete
+              items={branchList}
+              label="Branch Name"
+              placeholder="Select or enter branch name"
+              defaultSelectedItem={branchName}
+              onSelection={(value) => {
+                setBranchName(value);
+                setError("");
+              }}
+              isRequired
+              className="max-w-full"
+            />
+          )}
 
           {/* OS Selection - Android/iOS */}
           <CustomCheckboxGroup
@@ -326,7 +361,8 @@ const AzureTokenModal = ({
           </div>
 
           {/* Deployment Type - Production, External Testers, Internal Testers */}
-          {(!buildApk || !buildIpa) && (
+          {((!buildApk && selectedOS.includes("android")) ||
+            (!buildIpa && selectedOS.includes("ios"))) && (
             <CustomRadioGroup
               data={deploymentTypeOptions}
               id="id"

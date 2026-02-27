@@ -80,15 +80,10 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
   };
 
   // Get selected tenant IDs
-  const getSelectedTenantIds = (): number | number[] => {
-    const ids = selectedTenants.map((tenant) => tenant.id);
-    return ids.length === 1 ? ids[0] : ids;
-  };
-
-  // Get selected tenant names
-  const getSelectedTenantNames = (): string | string[] => {
-    const names = selectedTenants.map((tenant) => tenant.name);
-    return names.length === 1 ? names[0] : names;
+  const getSelectedTenants = ():
+    | TenantReleaseDataType
+    | TenantReleaseDataType[] => {
+    return selectedTenants.length === 1 ? selectedTenants[0] : selectedTenants;
   };
 
   // Check if there are any deployable items in selection
@@ -209,8 +204,7 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
         <AzureTokenModal
           isOpen={isModalOpen}
           onClose={handleModalClose}
-          tenantId={getSelectedTenantIds()}
-          tenantName={getSelectedTenantNames()}
+          tenants={getSelectedTenants()}
           onSuccess={handleSuccess}
         />
       )}

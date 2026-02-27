@@ -45,6 +45,7 @@ export type TenantReleaseDataType = {
   status: TenantReleaseStatusEnum;
   androidVersion: string;
   iosVersion: string;
+  matchBranch: string;
 };
 
 type ReleaseVersionDataType = {
