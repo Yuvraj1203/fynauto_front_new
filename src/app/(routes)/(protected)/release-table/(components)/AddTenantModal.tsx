@@ -104,7 +104,6 @@ const AddTenantModal = ({
   };
 
   const onSubmit = (data: AddCustomTenantType) => {
-    console.log("data===>", data);
 
     AddCustomTenantApi.mutate({
       body: data,

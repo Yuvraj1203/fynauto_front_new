@@ -9,9 +9,14 @@ import {
   TableSelectionModeEnum,
 } from "@/components/custom";
 import { ReactIcons } from "@/public";
+import { ApiConstants } from "@/services/apiConstants";
+import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
 import { CustomColor, CustomSize } from "@/services/types";
+import { useGitCredStore } from "@/store/zustandStore";
+import { showSnackbar, SnackbarEnum } from "@/utils/utils";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AzureTokenModal from "./AzureTokenModal";
 import {
   TenantReleaseDataType,
@@ -22,6 +27,12 @@ import {
 type TenantReleaseTableProps = {
   tenantReleaseData: TenantReleaseDataType[];
 };
+
+export enum AzureStatusEnum {
+  InProgress = "inProgress",
+  Succeeded = "succeeded",
+  Failed = "failed",
+}
 
 //custom header
 const tableHeader = [
@@ -47,6 +58,8 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
     TenantReleaseDataType[]
   >([]);
   const [tableSelection, setTableSelection] = useState<any>(new Set());
+
+  const azureBearerToken = useGitCredStore().azureBearer;
 
   const handleDeployClick = (item: TenantReleaseDataType) => {
     setSelectedTenants([item]);
@@ -75,7 +88,8 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
 
   const handleSuccess = () => {
     // Optionally trigger a refresh or show success message
-    console.log("Deployment triggered successfully");
+
+    refetch();
     setTableSelection(new Set());
   };
 
@@ -105,6 +119,74 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
           item.status === TenantReleaseStatusEnum.Failed),
     ).length;
   };
+
+  //polling
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["GetProgress"],
+    queryFn: (sendData: Record<string, any>) =>
+      makeRequest<any>({
+        endpoint: ApiConstants.GetProgress,
+        method: HttpMethodApi.Get,
+        data: { token: azureBearerToken },
+        withoutBaseModel: true,
+      }),
+    refetchInterval: (data) => {
+      if (data?.state?.data?.result?.status === AzureStatusEnum.InProgress) {
+        return 1000 * 60 * 7; // 7 minutes
+      } else {
+        return false;
+      }
+    },
+  });
+
+  const UpdateTenantStatusApi = useMutation({
+    mutationFn: (sendData: {
+      data: Record<string, any>;
+      param: Record<string, any>;
+    }) => {
+      return makeRequest<any>({
+        endpoint: ApiConstants.UpdateTenantStatus,
+        method: HttpMethodApi.Put,
+        data: sendData.data,
+        params: sendData.param,
+      }); // API Call
+    },
+    onMutate(variables) {
+      // setLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      // setLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      if (data.success) {
+        showSnackbar(
+          "Tenant status updated successfully",
+          SnackbarEnum.Success,
+        );
+      }
+    },
+    onError(error, variables, context) {
+      showSnackbar("Failed to update tenant status", SnackbarEnum.Danger);
+    },
+  });
+
+  useEffect(() => {
+    if (data?.result) {
+      if (data.result?.status === AzureStatusEnum.Succeeded) {
+        // update statius for success
+      } else if (data.result?.status === AzureStatusEnum.Failed) {
+        // update status for failed
+        UpdateTenantStatusApi.mutate({
+          data: {},
+          param: {
+            version: data.result.version,
+          },
+        });
+      } else if (data.result?.status === AzureStatusEnum.InProgress) {
+        // update status for in progress
+      }
+    }
+  }, [data]);
 
   //dynamic and customize cell rendering
   const renderCustomCell = useCallback(

@@ -141,6 +141,34 @@ const AzureTokenModal = ({
     },
   });
 
+  // Fetch branches from Azure DevOps using useMutation
+  const DeployTenantsApi = useMutation({
+    mutationFn: (sendData: Record<string, any>) => {
+      return makeRequest<any>({
+        endpoint: ApiConstants.DeployTenants,
+        method: HttpMethodApi.Post,
+        data: sendData,
+        withoutBaseModel: true,
+      }); // API Call
+    },
+    onMutate(variables) {
+      setLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      setLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      if (data?.value) {
+        handleClose();
+        onSuccess();
+      }
+    },
+    onError() {
+      // Keep initial branch list as fallback on error
+      showSnackbar("Failed to deploy tenant", SnackbarEnum.Danger);
+    },
+  });
+
   const handleRun = async () => {
     // Validation
     if (!azureGitToken.trim()) {
@@ -177,7 +205,7 @@ const AzureTokenModal = ({
       const allTenants = Array.isArray(tenants) ? tenants : [tenants];
 
       for (const tenant of allTenants) {
-        console.log("can be final=>", {
+        const jsonData = {
           body: {
             resources: {
               repositories: {
@@ -192,61 +220,18 @@ const AzureTokenModal = ({
               ios: selectedOS.includes("ios") ? "true" : "false",
               production: deploymentType === "production" ? "true" : "false",
               externalTester: deploymentType === "external" ? "true" : "false",
-              buildApk: buildApk,
-              buildIpa: buildIpa,
+              buildApk: buildApk ? "true" : "false",
+              buildIpa: buildIpa ? "true" : "false",
               azureGitToken: azureGitToken,
               ...(tenant.matchBranch
                 ? { matchbranch: tenant.matchBranch }
                 : {}),
             },
           },
-        });
-        // return;
-        const response = await fetch(
-          "https://dev.azure.com/kansoftware/Thoroughbred%20Apps/_apis/pipelines/103/runs?api-version=7.1-preview.1",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${bearerToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              resources: {
-                repositories: {
-                  self: {
-                    refName: `refs/heads/${branchName}`,
-                  },
-                },
-              },
-              templateParameters: JSON.stringify({
-                tenant: tenant.name,
-                android: selectedOS.includes("android") ? "true" : "false",
-                ios: selectedOS.includes("ios") ? "true" : "false",
-                production: deploymentType === "production" ? "true" : "false",
-                externalTester:
-                  deploymentType === "external" ? "true" : "false",
-                buildApk: buildApk,
-                buildIpa: buildIpa,
-                azureGitToken: azureGitToken,
-                ...(tenant.matchBranch
-                  ? { matchbranch: tenant.matchBranch }
-                  : {}),
-              }),
-            }),
-          },
-        );
-
-        if (!response.ok) {
-          setError(
-            `Failed to trigger Azure pipeline for tenant ID: ${tenant.id}`,
-          );
-          setLoading(false);
-          return;
-        }
+          bearerToken: bearerToken,
+        };
+        DeployTenantsApi.mutate(jsonData);
       }
-
-      onSuccess();
-      handleClose();
     } catch (err) {
       setError("An error occurred while calling the API.");
     } finally {
