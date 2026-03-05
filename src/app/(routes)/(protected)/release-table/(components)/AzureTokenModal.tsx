@@ -19,13 +19,16 @@ import { useGitCredStore } from "@/store/zustandStore";
 import { checkHasValidDate, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { TenantReleaseDataType } from "./tenantListAccordians";
+import {
+  TenantReleaseDataType,
+  TenantReleaseStatusEnum,
+} from "./tenantListAccordians";
 
 type AzureTokenModalProps = {
   isOpen: boolean;
   onClose: () => void;
   tenants: TenantReleaseDataType | TenantReleaseDataType[];
-  onSuccess: () => void;
+  onSuccess: ({ android, ios }: { android: boolean; ios: boolean }) => void;
 };
 
 // OS options
@@ -158,14 +161,46 @@ const AzureTokenModal = ({
       setLoading(false);
     },
     onSuccess(data, variables, context) {
-      if (data?.value) {
-        handleClose();
-        onSuccess();
-      }
+      handleClose();
+      onSuccess({
+        android: selectedOS.includes("android"),
+        ios: selectedOS.includes("ios"),
+      });
     },
     onError() {
       // Keep initial branch list as fallback on error
       showSnackbar("Failed to deploy tenant", SnackbarEnum.Danger);
+    },
+  });
+
+  // Update tenant status API - called when deploy is clicked to increment version
+  const UpdateTenantStatusApi = useMutation({
+    mutationFn: (sendData: {
+      name: string;
+      status: number;
+      android: boolean;
+      ios: boolean;
+      version: string;
+    }) => {
+      return makeRequest<any>({
+        endpoint: ApiConstants.UpdateTenantStatus,
+        method: HttpMethodApi.Put,
+        data: {
+          name: sendData.name,
+          status: sendData.status,
+          android: sendData.android,
+          ios: sendData.ios,
+        },
+        params: { version: sendData.version },
+      }); // API Call
+    },
+    onSuccess(data, variables, context) {
+      if (data.success) {
+        console.log("Tenant status updated to InProgress, version incremented");
+      }
+    },
+    onError(error, variables, context) {
+      console.error("Failed to update tenant status", error);
     },
   });
 
@@ -205,6 +240,19 @@ const AzureTokenModal = ({
       const allTenants = Array.isArray(tenants) ? tenants : [tenants];
 
       for (const tenant of allTenants) {
+        // First, update tenant status to Ongoing (1) - this will increment the version
+        // Get current version from tenant data
+        const currentVersion =
+          tenant.androidVersion || tenant.iosVersion || "1.0.0";
+
+        UpdateTenantStatusApi.mutate({
+          name: tenant.name,
+          status: TenantReleaseStatusEnum.Ongoing,
+          android: selectedOS.includes("android"),
+          ios: selectedOS.includes("ios"),
+          version: currentVersion,
+        });
+
         const jsonData = {
           body: {
             resources: {
@@ -230,6 +278,7 @@ const AzureTokenModal = ({
           },
           bearerToken: bearerToken,
         };
+
         DeployTenantsApi.mutate(jsonData);
       }
     } catch (err) {
@@ -240,7 +289,7 @@ const AzureTokenModal = ({
   };
 
   const handleClose = () => {
-    setAzureGitToken("");
+    // setAzureGitToken("");
     setBranchName("");
     setSelectedOS([]);
     setDeploymentType("");

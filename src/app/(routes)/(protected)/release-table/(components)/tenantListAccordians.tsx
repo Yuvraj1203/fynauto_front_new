@@ -73,23 +73,23 @@ const TenantListAccordians = ({
   const [latestReleaseVersion, setLatestReleaseVersion] = useState("");
 
   useEffect(() => {
+    callGetReleasesVersionApi();
+  }, []);
+
+  useEffect(() => {
+    if (refreshList) {
+      callGetReleasesVersionApi();
+      setRefreshList(false);
+    }
+  }, [refreshList]);
+
+  const callGetReleasesVersionApi = () => {
     GetReleasesVersionApi.mutate({
       data: {
         skipCount: 0,
       },
     });
-  }, []);
-
-  useEffect(() => {
-    if (refreshList) {
-      GetReleasesVersionApi.mutate({
-        data: {
-          skipCount: 0,
-        },
-      });
-      setRefreshList(false);
-    }
-  }, [refreshList]);
+  };
 
   //call api
   const GetReleasesVersionApi = useMutation({
@@ -122,16 +122,13 @@ const TenantListAccordians = ({
 
   const handleAddTenantSuccess = () => {
     // Refresh the list after adding tenant
-    GetReleasesVersionApi.mutate({
-      data: {
-        skipCount: 0,
-      },
-    });
+    callGetReleasesVersionApi();
   };
 
   const renderContent = (
     tenantReleaseItem: TenantReleaseDataType[],
     isFirstAccordion: boolean = false,
+    version: string,
   ) => {
     return (
       <div>
@@ -160,7 +157,11 @@ const TenantListAccordians = ({
             }}
           />
         )}
-        <TenantReleaseTable tenantReleaseData={tenantReleaseItem} />
+        <TenantReleaseTable
+          tenantReleaseData={tenantReleaseItem}
+          tenantReleaseVersion={version}
+          refreshData={callGetReleasesVersionApi}
+        />
       </div>
     );
   };
@@ -248,6 +249,7 @@ const TenantListAccordians = ({
             return renderContent(
               releaseVersionItem.tenants as TenantReleaseDataType[],
               index === 0, // isFirstAccordion
+              releaseVersionItem.version,
             );
           }}
           renderHeader={(releaseVersionItem) => {

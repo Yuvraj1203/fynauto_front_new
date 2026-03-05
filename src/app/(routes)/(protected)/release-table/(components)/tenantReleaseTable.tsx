@@ -16,7 +16,7 @@ import { useGitCredStore } from "@/store/zustandStore";
 import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AzureTokenModal from "./AzureTokenModal";
 import {
   TenantReleaseDataType,
@@ -26,6 +26,8 @@ import {
 
 type TenantReleaseTableProps = {
   tenantReleaseData: TenantReleaseDataType[];
+  tenantReleaseVersion: string;
+  refreshData: () => void;
 };
 
 export enum AzureStatusEnum {
@@ -51,13 +53,24 @@ export const statusColorMap: Record<number, CustomColor> = {
   3: CustomColor.danger,
 };
 
-const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
+const TenantReleaseTable = ({
+  tenantReleaseData,
+  tenantReleaseVersion,
+  refreshData,
+}: TenantReleaseTableProps) => {
   const t = useTranslations();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTenants, setSelectedTenants] = useState<
     TenantReleaseDataType[]
   >([]);
   const [tableSelection, setTableSelection] = useState<any>(new Set());
+  const [selectedOs, setSelectedOS] = useState({
+    android: false,
+    ios: false,
+  });
+  const isDeployAvailable = useRef(true);
+  const manualRefetch = useRef(false);
+  const initialRender = useRef(true);
 
   const azureBearerToken = useGitCredStore().azureBearer;
 
@@ -83,12 +96,32 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setSelectedTenants([]);
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = ({
+    android,
+    ios,
+  }: {
+    android: boolean;
+    ios: boolean;
+  }) => {
+    console.log("Deployment triggered for OS - ", { android, ios });
     // Optionally trigger a refresh or show success message
+    setSelectedOS({ android, ios });
+    manualRefetch.current = true; // mark manual call
 
+    isDeployAvailable.current = false;
+    UpdateTenantStatusApi.mutate({
+      data: {
+        name: data.result.tenant,
+        status: TenantReleaseStatusEnum.Ongoing,
+        android: android,
+        ios: ios,
+      },
+      param: {
+        version: tenantReleaseVersion,
+      },
+    });
     refetch();
     setTableSelection(new Set());
   };
@@ -132,7 +165,7 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
       }),
     refetchInterval: (data) => {
       if (data?.state?.data?.result?.status === AzureStatusEnum.InProgress) {
-        return 1000 * 60 * 7; // 7 minutes
+        return 1000 * 60 * 3; // 3 minutes
       } else {
         return false;
       }
@@ -164,34 +197,71 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
           SnackbarEnum.Success,
         );
       }
+      if (manualRefetch.current) {
+        refetch();
+      }
+      refreshData();
     },
     onError(error, variables, context) {
-      showSnackbar("Failed to update tenant status", SnackbarEnum.Danger);
+      // showSnackbar("Failed to update tenant status", SnackbarEnum.Danger);
     },
   });
 
   useEffect(() => {
+    if (!data?.result) return;
+
+    const isManual = manualRefetch.current;
+
     if (data?.result) {
       if (data.result?.status === AzureStatusEnum.Succeeded) {
         // update statius for success
+        UpdateTenantStatusApi.mutate({
+          data: {
+            name: data.result.tenant,
+            status: TenantReleaseStatusEnum.Published,
+            android: selectedOs.android,
+            ios: selectedOs.ios,
+          },
+          param: {
+            version: tenantReleaseVersion,
+          },
+        });
+        setSelectedOS({ android: false, ios: false });
+        isDeployAvailable.current = true;
+        if (!initialRender.current) {
+          refreshData();
+        }
       } else if (data.result?.status === AzureStatusEnum.Failed) {
         // update status for failed
         UpdateTenantStatusApi.mutate({
-          data: {},
+          data: {
+            name: data.result.tenant,
+            status: TenantReleaseStatusEnum.Failed,
+            android: false,
+            ios: false,
+          },
           param: {
-            version: data.result.version,
+            version: tenantReleaseVersion,
           },
         });
+        isDeployAvailable.current = true;
+        if (!initialRender.current) {
+          refreshData();
+        }
       } else if (data.result?.status === AzureStatusEnum.InProgress) {
-        // update status for in progress
+        isDeployAvailable.current = false;
       }
     }
+    // reset flag after handling
+    manualRefetch.current = false;
+    initialRender.current = false;
   }, [data]);
 
   //dynamic and customize cell rendering
   const renderCustomCell = useCallback(
     (item: TenantReleaseDataType, columnKey: keyof TenantReleaseDataType) => {
       const cellValue = item[columnKey];
+      const canDeploy = isDeployAvailable.current;
 
       switch (columnKey) {
         case "status":
@@ -216,7 +286,8 @@ const TenantReleaseTable = ({ tenantReleaseData }: TenantReleaseTableProps) => {
                 <CustomButton
                   startContent={<ReactIcons.Play />}
                   className="bg-focus"
-                  onClick={() => handleDeployClick(item)}
+                  isDisabled={!canDeploy}
+                  onClick={() => canDeploy && handleDeployClick(item)}
                 >
                   {t("Deploy")}
                 </CustomButton>
