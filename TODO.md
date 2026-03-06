@@ -1,28 +1,33 @@
-# Add Tenant to Release Page - Implementation Plan
+# TODO: Fix CustomTable Multi-selection
 
-## Steps to Complete:
+## Task
 
-- [x] 1. Create AddTenantModal.tsx component
-- [x] 2. Modify tenantListAccordians.tsx to add "Add Tenant" button and integrate modal
-- [x] 3. Modify CustomAccordion to pass index in renderContent callback
-- [ ] 4. Test the implementation
+Fix the custom table for multiselection so that:
 
-## Details:
+- Selected keys are passed to parent as an array
+- Parent can control selection via array
+- "All" selection returns all item IDs as array
+- Selection handling is smooth without lag
 
-### Step 1: Create AddTenantModal.tsx
+## Steps
 
-- Create new modal component in release-table/(components)/
-- Fields: Tenant Name, Status (dropdown), Android Version, iOS Version
-- API call to AddTenant endpoint
+### Step 1: Fix CustomTable (customTable.tsx)
 
-### Step 2: Modify tenantListAccordians.tsx
+- [x] Read and understand current implementation
+- [x] Remove internal useState for selection (make it fully controlled)
+- [x] Properly handle "all" selection - return all item IDs as array
+- [x] Fix onSelectionChange to directly pass array to parent (not via useEffect)
+- [x] Handle array type for selectedValue prop
 
-- Add state for modal visibility
-- Add "Add Tenant" button at top of first accordion content
-- Show button only for latest release (first accordion)
-- Pass latest release version to modal subtitle
+### Step 2: Update Parent Component (tenantReleaseTable.tsx)
 
-### Step 3: Modify CustomAccordion
+- [x] Change tableSelection from Set to array (string[])
+- [x] Pass array to selectedValue prop
+- [x] Handle array in onSelectionChange callback
 
-- Added index parameter to renderContent callback
-- Allows determining first accordion for "Add Tenant" button
+### Step 3: Test
+
+- [x] Verify multi-selection works
+- [x] Verify "Select All" returns array of all IDs
+- [x] Verify single selection works
+- [x] TypeScript compiles without errors

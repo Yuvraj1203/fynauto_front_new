@@ -2,22 +2,17 @@
 import { Text, TextVariant } from "@/components/common";
 import {
   AccordionVariant,
-  ButtonVariant,
   ChipVariant,
   CustomAccordion,
-  CustomButton,
   CustomChip,
-  CustomModal,
   CustomSpinner,
 } from "@/components/custom";
-import { ReactIcons } from "@/public";
 import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
-import { CustomColor, CustomSize } from "@/services/types";
+import { CustomSize } from "@/services/types";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import AddTenantModal from "./AddTenantModal";
 import TenantReleaseTable, { statusColorMap } from "./tenantReleaseTable";
 
 type TenantListAccordiansProps = {
@@ -69,7 +64,6 @@ const TenantListAccordians = ({
   const [releaseVersionData, setReleaseVersionData] = useState<
     ReleaseVersionDataType[]
   >([]);
-  const [isAddTenantModalOpen, setIsAddTenantModalOpen] = useState(false);
   const [latestReleaseVersion, setLatestReleaseVersion] = useState("");
 
   useEffect(() => {
@@ -131,38 +125,13 @@ const TenantListAccordians = ({
     version: string,
   ) => {
     return (
-      <div>
-        {isFirstAccordion && (
-          <CustomModal
-            trigger={
-              <CustomButton
-                className="flex justify-self-end"
-                color={CustomColor.default}
-                variant={ButtonVariant.faded}
-                onClick={() => setIsAddTenantModalOpen(true)}
-                startContent={<ReactIcons.AddUser />}
-              >
-                Add Tenant
-              </CustomButton>
-            }
-            closeButton={false}
-            children={(onClose) => {
-              return (
-                <AddTenantModal
-                  releaseVersion={latestReleaseVersion}
-                  onSuccess={handleAddTenantSuccess}
-                  onClose={onClose}
-                />
-              );
-            }}
-          />
-        )}
-        <TenantReleaseTable
-          tenantReleaseData={tenantReleaseItem}
-          tenantReleaseVersion={version}
-          refreshData={callGetReleasesVersionApi}
-        />
-      </div>
+      <TenantReleaseTable
+        tenantReleaseData={tenantReleaseItem}
+        tenantReleaseVersion={version}
+        refreshData={callGetReleasesVersionApi}
+        latestReleaseVersion={latestReleaseVersion}
+        onSuccess={handleAddTenantSuccess}
+      />
     );
   };
 

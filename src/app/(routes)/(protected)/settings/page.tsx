@@ -49,6 +49,7 @@ const SettingsPage = () => {
 
   const setGitToken = useGitCredStore((state) => state.setGitCred);
   const setAzureBearer = useGitCredStore((state) => state.setAzureBearer);
+  const setGitBranchName = useGitCredStore((state) => state.setBranchName);
 
   // Branch list state - fetched from Azure DevOps
   const [branchList, setBranchList] = useState<
@@ -94,6 +95,7 @@ const SettingsPage = () => {
       if (data?.result) {
         setGitToken(azureGitCred, 14);
         setAzureBearer(azureBearerToken, 364);
+        setGitBranchName(String(branchName));
         showSnackbar(
           "Azure credentials saved successfully",
           SnackbarEnum.Success,

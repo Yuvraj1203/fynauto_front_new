@@ -2,6 +2,7 @@
 
 import { CustomSpinner } from "@/components/custom";
 import { useSidebarStore } from "@/store/zustandStore";
+import type { Selection } from "@heroui/react";
 import {
   getKeyValue,
   SharedSelection,
@@ -30,6 +31,7 @@ type Primitive = string | number;
 type CustomTableProps<T extends object, V extends Primitive = string> = {
   columns?: Column<T>[];
   data: T[];
+  itemId?: keyof T | string; // Optional prop to specify unique identifier key, defaults to 'id'
   loading?: boolean;
   emptyText?: string;
   rowKey: keyof T;
@@ -47,9 +49,9 @@ type CustomTableProps<T extends object, V extends Primitive = string> = {
     columnKey: keyof T,
   ) => string | number | ReactNode;
   selectionMode?: TableSelectionModeEnum;
-  selectedValue?: V | V[];
-  defaultSelectedValue?: V | V[];
-  onSelectionChange?: (value: Primitive | Primitive[]) => void;
+  selectedValue?: string[]; // Array of selected keys from parent (strings for HeroUI)
+  defaultSelectedValue?: string[]; // Array of default selected keys
+  onSelectionChange?: (value: string[]) => void; // Returns array of selected keys to parent
 };
 
 const CustomTable = <T extends object, V extends Primitive = string>({
@@ -58,30 +60,30 @@ const CustomTable = <T extends object, V extends Primitive = string>({
   loading = false,
   emptyText,
   rowKey,
+  itemId = "id",
   ...props
 }: CustomTableProps<T>) => {
   const t = useTranslations();
   const sidebarState = useSidebarStore((state) => state.sidebarState);
 
-  // Normalize incoming value(s) → string keys for Select
-  const selectedKeys =
-    props.selectedValue === undefined
-      ? undefined
-      : Array.isArray(props.selectedValue)
-        ? props.selectedValue.map(String)
-        : [String(props.selectedValue)];
+  // Determine if V is number type
+  const isValueNumberType = (): boolean => {
+    if (!props.selectedValue || props.selectedValue.length === 0) {
+      return false;
+    }
+    return typeof props.selectedValue[0] === "number";
+  };
 
-  const defaultSelectedKeys =
-    props.defaultSelectedValue === undefined
-      ? undefined
-      : Array.isArray(props.defaultSelectedValue)
-        ? props.defaultSelectedValue.map(String)
-        : [String(props.defaultSelectedValue)];
+  // Convert array to Set<string> for HeroUI Table's selectedKeys prop
+  // HeroUI internally uses string keys, so we always convert to strings for the Table
+  const selectedKeys: Selection = props.selectedValue
+    ? new Set(props.selectedValue.map(String))
+    : new Set();
 
-  const isNumberValue =
-    typeof props.selectedValue === "number" ||
-    (Array.isArray(props.selectedValue) &&
-      typeof props.selectedValue[0] === "number");
+  // Handle default selected keys
+  const defaultSelectedKeys: Selection = props.defaultSelectedValue
+    ? new Set(props.defaultSelectedValue.map(String))
+    : new Set();
 
   // Auto-generate header/columns if none provided
   const autoColumns: Column<T>[] =
@@ -106,6 +108,28 @@ const CustomTable = <T extends object, V extends Primitive = string>({
     }
   }, []);
 
+  // Handle selection change - returns array to parent
+  const handleSelectionChange = (selection: SharedSelection) => {
+    const isNumberType = isValueNumberType();
+    let selectedArray: string[] = [];
+
+    if (selection === "all") {
+      // "all" means all items are selected - return all item IDs as array
+      selectedArray = data.map((item) => {
+        const itemIdValue = item[itemId as keyof T];
+        // Always convert to string for HeroUI Table
+        return String(itemIdValue);
+      });
+    } else {
+      // Convert Set to array of strings
+      const keysArray = Array.from(selection as Set<React.Key>);
+      selectedArray = keysArray.map((k) => String(k));
+    }
+
+    // Call parent's onSelectionChange with array
+    props.onSelectionChange?.(selectedArray);
+  };
+
   //loading while fetching
   if (loading) {
     return <CustomSpinner className="grow" />;
@@ -123,32 +147,7 @@ const CustomTable = <T extends object, V extends Primitive = string>({
       selectionMode={props.selectionMode}
       selectedKeys={selectedKeys}
       defaultSelectedKeys={defaultSelectedKeys}
-      onSelectionChange={(selection: SharedSelection) => {
-        console.log("Selected keys:", selectedKeys, "Selection:", selection);
-        if (selection === "all") {
-          if (selectedKeys && selectedKeys[0] === "all") {
-            props.onSelectionChange?.([]);
-          } else {
-            props.onSelectionChange?.(["all"]);
-          }
-          return;
-        }
-        const keys = Array.from(selection);
-        const parsedValues = keys.map((k) =>
-          isNumberValue ? (Number(k) as V) : (String(k) as V),
-        );
-
-        if (parsedValues.length === 0) {
-          return;
-        }
-
-        const value: Primitive | Primitive[] =
-          props.selectionMode === TableSelectionModeEnum.Multiple
-            ? parsedValues
-            : parsedValues[0];
-
-        props.onSelectionChange?.(value);
-      }}
+      onSelectionChange={handleSelectionChange}
       isCompact={props.isCompact}
       removeWrapper={props.removeWrapper}
       classNames={{

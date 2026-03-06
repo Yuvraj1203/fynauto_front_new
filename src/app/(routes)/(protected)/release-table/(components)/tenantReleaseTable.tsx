@@ -5,6 +5,7 @@ import {
   ChipVariant,
   CustomButton,
   CustomChip,
+  CustomModal,
   CustomTable,
   TableSelectionModeEnum,
 } from "@/components/custom";
@@ -17,6 +18,7 @@ import { showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import AddTenantModal from "./AddTenantModal";
 import AzureTokenModal from "./AzureTokenModal";
 import {
   TenantReleaseDataType,
@@ -28,6 +30,8 @@ type TenantReleaseTableProps = {
   tenantReleaseData: TenantReleaseDataType[];
   tenantReleaseVersion: string;
   refreshData: () => void;
+  latestReleaseVersion: string;
+  onSuccess: () => void;
 };
 
 export enum AzureStatusEnum {
@@ -57,13 +61,15 @@ const TenantReleaseTable = ({
   tenantReleaseData,
   tenantReleaseVersion,
   refreshData,
+  latestReleaseVersion,
+  onSuccess,
 }: TenantReleaseTableProps) => {
   const t = useTranslations();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTenants, setSelectedTenants] = useState<
     TenantReleaseDataType[]
   >([]);
-  const [tableSelection, setTableSelection] = useState<any>(new Set());
+  const [tableSelection, setTableSelection] = useState<string[]>([]); // Use string array for HeroUI Table
   const [selectedOs, setSelectedOS] = useState({
     android: false,
     ios: false,
@@ -83,7 +89,7 @@ const TenantReleaseTable = ({
     // Filter selected items that are in Pending or Failed status
     const deployableItems = tenantReleaseData.filter(
       (item) =>
-        tableSelection.has(item.id) &&
+        tableSelection.includes(String(item.id)) &&
         (item.status === TenantReleaseStatusEnum.Pending ||
           item.status === TenantReleaseStatusEnum.Failed),
     );
@@ -113,7 +119,7 @@ const TenantReleaseTable = ({
     isDeployAvailable.current = false;
     UpdateTenantStatusApi.mutate({
       data: {
-        name: data.result.tenant,
+        name: selectedTenants[0].name,
         status: TenantReleaseStatusEnum.Ongoing,
         android: android,
         ios: ios,
@@ -123,7 +129,7 @@ const TenantReleaseTable = ({
       },
     });
     refetch();
-    setTableSelection(new Set());
+    setTableSelection([]);
   };
 
   // Get selected tenant IDs
@@ -137,7 +143,7 @@ const TenantReleaseTable = ({
   const hasDeployableSelection = () => {
     return tenantReleaseData.some(
       (item) =>
-        tableSelection.has(item.id) &&
+        tableSelection.includes(String(item.id)) &&
         (item.status === TenantReleaseStatusEnum.Pending ||
           item.status === TenantReleaseStatusEnum.Failed),
     );
@@ -147,7 +153,7 @@ const TenantReleaseTable = ({
   const getDeployableCount = () => {
     return tenantReleaseData.filter(
       (item) =>
-        tableSelection.has(item.id) &&
+        tableSelection.includes(String(item.id)) &&
         (item.status === TenantReleaseStatusEnum.Pending ||
           item.status === TenantReleaseStatusEnum.Failed),
     ).length;
@@ -328,18 +334,45 @@ const TenantReleaseTable = ({
     [t],
   );
 
+  useEffect(() => {
+    console.log("tableSelection.length=>", tableSelection.length);
+  }, [tableSelection.length]);
+
   return (
     <>
-      {/* Bulk Deploy Button - Shows when items are selected */}
-      {tableSelection.size > 0 && hasDeployableSelection() && (
-        <div className="mb-4 flex justify-end">
-          <CustomButton
-            startContent={<ReactIcons.Play />}
-            className="bg-focus"
-            onClick={handleMultipleDeployClick}
-          >
-            {t("Deploy")} ({getDeployableCount()})
-          </CustomButton>
+      {latestReleaseVersion == tenantReleaseVersion && (
+        <div className="flex items-center justify-end gap-4">
+          <CustomModal
+            trigger={
+              <CustomButton
+                className="flex justify-self-end"
+                color={CustomColor.default}
+                variant={ButtonVariant.faded}
+                startContent={<ReactIcons.AddUser />}
+              >
+                Add Tenant
+              </CustomButton>
+            }
+            closeButton={false}
+            children={(onClose) => {
+              return (
+                <AddTenantModal
+                  releaseVersion={latestReleaseVersion}
+                  onSuccess={onSuccess}
+                  onClose={onClose}
+                />
+              );
+            }}
+          />
+          {tableSelection.length > 1 && (
+            <CustomButton
+              startContent={<ReactIcons.Play />}
+              className="bg-focus"
+              onClick={handleMultipleDeployClick}
+            >
+              {t("Deploy")} ({tableSelection.length})
+            </CustomButton>
+          )}
         </div>
       )}
       <CustomTable
@@ -351,7 +384,7 @@ const TenantReleaseTable = ({
         removeWrapper={true}
         selectionMode={TableSelectionModeEnum.Multiple}
         selectedValue={tableSelection}
-        onSelectionChange={(value) => setTableSelection(value)}
+        onSelectionChange={(value: string[]) => setTableSelection(value)}
       />
       {selectedTenants.length > 0 && (
         <AzureTokenModal

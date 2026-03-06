@@ -11,6 +11,9 @@ type GitCredStoreType = {
   azureBearer: string;
   azureBearerExpiry: number; //give days
   setAzureBearer: (value: string, expiry: number) => void;
+
+  branchName: string;
+  setBranchName: (value: string) => void;
 };
 
 const useGitCredStore = create<GitCredStoreType>()(
@@ -30,6 +33,12 @@ const useGitCredStore = create<GitCredStoreType>()(
         set(() => ({
           azureBearer: value,
           azureBearerExpiry: Date.now() + expiry * 24 * 60 * 60 * 1000,
+        })),
+
+      branchName: "",
+      setBranchName: (value) =>
+        set(() => ({
+          branchName: value,
         })),
     }),
     {

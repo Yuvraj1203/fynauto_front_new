@@ -70,12 +70,14 @@ const AzureTokenModal = ({
   const [buildIpa, setBuildIpa] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [testflightOnly, setTestflightOnly] = useState(false);
 
   //git token for azure devops API call to fetch branches
   const gitToken = useGitCredStore().gitCred;
   const gitTokenExpiry = useGitCredStore().gitCredExpiry;
   const azureBearerToken = useGitCredStore().azureBearer;
   const azureBearerTokenExpiry = useGitCredStore().azureBearerExpiry;
+  const gitBranchName = useGitCredStore().branchName;
 
   // Branch list state - fetched from Azure DevOps
   const [branchList, setBranchList] = useState<
@@ -91,6 +93,7 @@ const AzureTokenModal = ({
 
     setAzureGitToken(gitToken);
     setBearerToken(azureBearerToken);
+    setBranchName(gitBranchName);
     if (!isGitTokenValid || !isAzureBearerValid) {
       setError(
         `${!isGitTokenValid ? "Git token may be expired." : ""} ${!isAzureBearerValid ? "Azure bearer token may be expired." : ""} Please update from settings in sidebar.`,
@@ -173,6 +176,31 @@ const AzureTokenModal = ({
     },
   });
 
+  // deploy multitenants
+  const CreateBulkDeploymentApi = useMutation({
+    mutationFn: (sendData: Record<string, any>) => {
+      return makeRequest<any>({
+        endpoint: ApiConstants.CreateBulkDeployment,
+        method: HttpMethodApi.Post,
+        data: sendData,
+        withoutBaseModel: true,
+      }); // API Call
+    },
+    onMutate(variables) {
+      setLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      setLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      handleClose();
+    },
+    onError() {
+      // Keep initial branch list as fallback on error
+      showSnackbar("Failed to deploy tenant", SnackbarEnum.Danger);
+    },
+  });
+
   // Update tenant status API - called when deploy is clicked to increment version
   const UpdateTenantStatusApi = useMutation({
     mutationFn: (sendData: {
@@ -214,20 +242,27 @@ const AzureTokenModal = ({
       setError("Branch name is required");
       return;
     }
-    if (selectedOS.length === 0) {
+
+    if (selectedOS.length === 0 && !isMultipleSelection) {
       setError("Please select at least one OS");
       return;
     }
     if (
       (!buildApk && selectedOS.includes("android")) ||
-      (!buildIpa && selectedOS.includes("ios"))
+      (!buildIpa && selectedOS.includes("ios") && !isMultipleSelection)
     ) {
       if (!deploymentType) {
         setError("Please select deployment type");
         return;
       }
     }
-    if (deploymentType !== "internal" && !buildApk && !buildIpa) {
+
+    if (
+      deploymentType !== "internal" &&
+      !buildApk &&
+      !buildIpa &&
+      !isMultipleSelection
+    ) {
       setError("Please select at least one build option");
       return;
     }
@@ -236,50 +271,71 @@ const AzureTokenModal = ({
     setError("");
 
     try {
-      // Handle both single and multiple tenant deployment
-      const allTenants = Array.isArray(tenants) ? tenants : [tenants];
-
-      for (const tenant of allTenants) {
-        // First, update tenant status to Ongoing (1) - this will increment the version
-        // Get current version from tenant data
-        const currentVersion =
-          tenant.androidVersion || tenant.iosVersion || "1.0.0";
-
-        UpdateTenantStatusApi.mutate({
-          name: tenant.name,
-          status: TenantReleaseStatusEnum.Ongoing,
-          android: selectedOS.includes("android"),
-          ios: selectedOS.includes("ios"),
-          version: currentVersion,
-        });
-
-        const jsonData = {
-          body: {
-            resources: {
-              repositories: {
-                self: {
-                  refName: `refs/heads/${branchName}`,
-                },
-              },
-            },
-            templateParameters: {
-              tenant: tenant.name,
-              android: selectedOS.includes("android") ? "true" : "false",
-              ios: selectedOS.includes("ios") ? "true" : "false",
-              production: deploymentType === "production" ? "true" : "false",
-              externalTester: deploymentType === "external" ? "true" : "false",
-              buildApk: buildApk ? "true" : "false",
-              buildIpa: buildIpa ? "true" : "false",
-              azureGitToken: azureGitToken,
-              ...(tenant.matchBranch
-                ? { matchbranch: tenant.matchBranch }
-                : {}),
-            },
-          },
-          bearerToken: bearerToken,
+      if (isMultipleSelection) {
+        const payload = {
+          azureGitToken: azureGitToken,
+          azureBearerToken: bearerToken,
+          gitBranch: gitBranchName,
+          onlyTestflight: testflightOnly,
+          deploymentList: tenants.map((tenant) => ({
+            id: tenant.id,
+            tenantName: tenant.name,
+            matchBranch: tenant.matchBranch || "",
+          })),
         };
 
-        DeployTenantsApi.mutate(jsonData);
+        console.log(
+          "Deploying multiple tenants with bulk deployment API",
+          payload,
+        );
+        CreateBulkDeploymentApi.mutate(payload);
+      } else {
+        // Handle both single and multiple tenant deployment
+        const allTenants = Array.isArray(tenants) ? tenants : [tenants];
+
+        for (const tenant of allTenants) {
+          // First, update tenant status to Ongoing (1) - this will increment the version
+          // Get current version from tenant data
+          const currentVersion =
+            tenant.androidVersion || tenant.iosVersion || "1.0.0";
+
+          UpdateTenantStatusApi.mutate({
+            name: tenant.name,
+            status: TenantReleaseStatusEnum.Ongoing,
+            android: selectedOS.includes("android"),
+            ios: selectedOS.includes("ios"),
+            version: currentVersion,
+          });
+
+          const jsonData = {
+            body: {
+              resources: {
+                repositories: {
+                  self: {
+                    refName: `refs/heads/${branchName}`,
+                  },
+                },
+              },
+              templateParameters: {
+                tenant: tenant.name,
+                android: selectedOS.includes("android") ? "true" : "false",
+                ios: selectedOS.includes("ios") ? "true" : "false",
+                production: deploymentType === "production" ? "true" : "false",
+                externalTester:
+                  deploymentType === "external" ? "true" : "false",
+                buildApk: buildApk ? "true" : "false",
+                buildIpa: buildIpa ? "true" : "false",
+                azureGitToken: azureGitToken,
+                ...(tenant.matchBranch
+                  ? { matchbranch: tenant.matchBranch }
+                  : {}),
+              },
+            },
+            bearerToken: bearerToken,
+          };
+
+          DeployTenantsApi.mutate(jsonData);
+        }
       }
     } catch (err) {
       setError("An error occurred while calling the API.");
@@ -339,79 +395,90 @@ const AzureTokenModal = ({
             type={InputTypes.password}
           />
 
-          {/* Branch Name Autocomplete */}
-          {!isMultipleSelection && (
-            <CustomAutoComplete
-              items={branchList}
-              label="Branch Name"
-              placeholder="Select or enter branch name"
-              defaultSelectedItem={branchName}
-              onSelection={(value) => {
-                setBranchName(value);
+          {isMultipleSelection ? (
+            <CustomCheckbox
+              isSelected={testflightOnly}
+              setIsSelected={(value) => {
+                setTestflightOnly(value);
                 setError("");
               }}
-              isRequired
-              className="max-w-full"
+              label="For Only Testflight"
             />
-          )}
-
-          {/* OS Selection - Android/iOS */}
-          <CustomCheckboxGroup
-            data={osOptions}
-            id="id"
-            value="value"
-            label="Select OS"
-            selectedValue={selectedOS}
-            setSelectedValue={(value) => {
-              setSelectedOS(value);
-              setError("");
-            }}
-            orientation={CheckboxOrientation.horizontal}
-          />
-
-          {/* Build Options - Build APK, Build IPA */}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-secondary-text">
-              Build Options
-            </label>
-            <div className="flex gap-4">
-              <CustomCheckbox
-                isSelected={buildApk}
-                setIsSelected={(value) => {
-                  setBuildApk(value);
+          ) : (
+            <>
+              {/* Branch Name Autocomplete */}
+              <CustomAutoComplete
+                items={branchList}
+                label="Branch Name"
+                placeholder="Select or enter branch name"
+                defaultSelectedItem={branchName}
+                onSelection={(value) => {
+                  setBranchName(value);
                   setError("");
                 }}
-                label="Build APK"
+                isRequired
+                className="max-w-full"
               />
-              <CustomCheckbox
-                isSelected={buildIpa}
-                setIsSelected={(value) => {
-                  setBuildIpa(value);
+
+              {/* OS Selection - Android/iOS */}
+              <CustomCheckboxGroup
+                data={osOptions}
+                id="id"
+                value="value"
+                label="Select OS"
+                selectedValue={selectedOS}
+                setSelectedValue={(value) => {
+                  setSelectedOS(value);
                   setError("");
                 }}
-                label="Build IPA"
+                orientation={CheckboxOrientation.horizontal}
               />
-            </div>
-          </div>
 
-          {/* Deployment Type - Production, External Testers, Internal Testers */}
-          {((!buildApk && selectedOS.includes("android")) ||
-            (!buildIpa && selectedOS.includes("ios"))) && (
-            <CustomRadioGroup
-              data={deploymentTypeOptions}
-              id="id"
-              value="value"
-              label={`Deployment Type (${buildApk ? "" : "Android"} ${buildIpa ? "" : "iOS"})`}
-              selectedValue={deploymentType}
-              setSelectedValue={(value) => {
-                setDeploymentType(value);
-                setError("");
-              }}
-            />
+              {/* Build Options - Build APK, Build IPA */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-secondary-text">
+                  Build Options
+                </label>
+                <div className="flex gap-4">
+                  <CustomCheckbox
+                    isSelected={buildApk}
+                    setIsSelected={(value) => {
+                      setBuildApk(value);
+                      setError("");
+                    }}
+                    label="Build APK"
+                  />
+                  <CustomCheckbox
+                    isSelected={buildIpa}
+                    setIsSelected={(value) => {
+                      setBuildIpa(value);
+                      setError("");
+                    }}
+                    label="Build IPA"
+                  />
+                </div>
+              </div>
+
+              {/* Deployment Type - Production, External Testers, Internal Testers */}
+              {((!buildApk && selectedOS.includes("android")) ||
+                (!buildIpa && selectedOS.includes("ios"))) && (
+                <CustomRadioGroup
+                  data={deploymentTypeOptions}
+                  id="id"
+                  value="value"
+                  label={`Deployment Type (${buildApk ? "" : "Android"} ${buildIpa ? "" : "iOS"})`}
+                  selectedValue={deploymentType}
+                  setSelectedValue={(value) => {
+                    setDeploymentType(value);
+                    setError("");
+                  }}
+                />
+              )}
+
+              {/* Error Message */}
+              {error && <p className="text-danger text-sm">{error}</p>}
+            </>
           )}
-
-          {/* Error Message */}
-          {error && <p className="text-danger text-sm">{error}</p>}
 
           {/* Footer Buttons */}
           <div className="flex justify-end gap-2 pt-4">
