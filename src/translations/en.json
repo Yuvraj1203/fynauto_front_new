@@ -165,5 +165,6 @@
   "Deploy": "Deploy",
   "Deploying": "Deploying...",
   "Retry": "Retry",
-  "Live": "Live"
+  "Live": "Live",
+  "CancelFurther": "Cancel Further"
 }

@@ -26,5 +26,7 @@ export const ApiConstants = {
   AddCustomTenant: "api/v1/releasesVersion/addCustomTenant",
   DeployTenants: "api/v1/releasesVersion/DeployTenants",
   GetProgress: "api/v1/releasesVersion/GetProgress",
-  CreateBulkDeployment: "/api/v1/bulkDeployment/createBulkDeployment",
+  CreateBulkDeployment: "api/v1/bulkDeployment/createBulkDeployment",
+  DeploymentDataAvailable: "api/v1/bulkDeployment/DeploymentDataAvailable",
+  DeleteBulkDeploymentData: "api/v1/bulkDeployment/deleteBulkDeploymentData",
 };

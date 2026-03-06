@@ -74,9 +74,11 @@ const TenantReleaseTable = ({
     android: false,
     ios: false,
   });
-  const isDeployAvailable = useRef(true);
+  const [isDeployAvailable, setIsDeployAvailable] = useState(true);
   const manualRefetch = useRef(false);
   const initialRender = useRef(true);
+  const [cancelButtonLoading, setCancelButtonLoading] = useState(false);
+  const [onGoingTenants, setOnGoingTenants] = useState<number>(0);
 
   const azureBearerToken = useGitCredStore().azureBearer;
 
@@ -84,6 +86,15 @@ const TenantReleaseTable = ({
     setSelectedTenants([item]);
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      refreshData();
+      refetch();
+      DeploymentDataAvailableApi.mutate({});
+      setTableSelection([]);
+    }
+  }, [isModalOpen]);
 
   const handleMultipleDeployClick = () => {
     // Filter selected items that are in Pending or Failed status
@@ -98,6 +109,10 @@ const TenantReleaseTable = ({
       setSelectedTenants(deployableItems);
       setIsModalOpen(true);
     }
+  };
+
+  const handleCancelAllDeployments = () => {
+    DeleteBulkDeploymentDataApi.mutate({});
   };
 
   const handleModalClose = () => {
@@ -116,7 +131,7 @@ const TenantReleaseTable = ({
     setSelectedOS({ android, ios });
     manualRefetch.current = true; // mark manual call
 
-    isDeployAvailable.current = false;
+    setIsDeployAvailable(false);
     UpdateTenantStatusApi.mutate({
       data: {
         name: selectedTenants[0].name,
@@ -214,6 +229,7 @@ const TenantReleaseTable = ({
   });
 
   useEffect(() => {
+    DeploymentDataAvailableApi.mutate({});
     if (!data?.result) return;
 
     const isManual = manualRefetch.current;
@@ -233,7 +249,7 @@ const TenantReleaseTable = ({
           },
         });
         setSelectedOS({ android: false, ios: false });
-        isDeployAvailable.current = true;
+        setIsDeployAvailable(true);
         if (!initialRender.current) {
           refreshData();
         }
@@ -250,12 +266,12 @@ const TenantReleaseTable = ({
             version: tenantReleaseVersion,
           },
         });
-        isDeployAvailable.current = true;
+        setIsDeployAvailable(true);
         if (!initialRender.current) {
           refreshData();
         }
       } else if (data.result?.status === AzureStatusEnum.InProgress) {
-        isDeployAvailable.current = false;
+        setIsDeployAvailable(false);
       }
     }
     // reset flag after handling
@@ -267,7 +283,6 @@ const TenantReleaseTable = ({
   const renderCustomCell = useCallback(
     (item: TenantReleaseDataType, columnKey: keyof TenantReleaseDataType) => {
       const cellValue = item[columnKey];
-      const canDeploy = isDeployAvailable.current;
 
       switch (columnKey) {
         case "status":
@@ -288,12 +303,13 @@ const TenantReleaseTable = ({
         case "id":
           switch (item.status) {
             case TenantReleaseStatusEnum.Pending:
+              console.log("onGoingTenants - ", onGoingTenants);
               return (
                 <CustomButton
                   startContent={<ReactIcons.Play />}
                   className="bg-focus"
-                  isDisabled={!canDeploy}
-                  onClick={() => canDeploy && handleDeployClick(item)}
+                  isDisabled={!isDeployAvailable || onGoingTenants > 0}
+                  onClick={() => isDeployAvailable && handleDeployClick(item)}
                 >
                   {t("Deploy")}
                 </CustomButton>
@@ -309,6 +325,7 @@ const TenantReleaseTable = ({
                 <CustomButton
                   color={CustomColor.danger}
                   startContent={<ReactIcons.Refresh />}
+                  isDisabled={!isDeployAvailable || onGoingTenants > 0}
                   onClick={() => handleDeployClick(item)}
                 >
                   {t("Retry")}
@@ -320,6 +337,7 @@ const TenantReleaseTable = ({
                   startContent={<ReactIcons.TickCircle />}
                   color={CustomColor.success}
                   variant={ButtonVariant.light}
+                  isDisabled={!isDeployAvailable || onGoingTenants > 0}
                 >
                   {t("Live")}
                 </CustomButton>
@@ -331,17 +349,82 @@ const TenantReleaseTable = ({
           return cellValue;
       }
     },
-    [t],
+    [t, onGoingTenants],
   );
 
-  useEffect(() => {
-    console.log("tableSelection.length=>", tableSelection.length);
-  }, [tableSelection.length]);
+  // deploy multitenants
+  const DeploymentDataAvailableApi = useMutation({
+    mutationFn: (sendData: Record<string, any>) => {
+      return makeRequest<any>({
+        endpoint: ApiConstants.DeploymentDataAvailable,
+        method: HttpMethodApi.Get,
+        data: sendData,
+        withoutBaseModel: true,
+      }); // API Call
+    },
+    onMutate(variables) {
+      setCancelButtonLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      setCancelButtonLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      setOnGoingTenants(data.result);
+    },
+    onError() {
+      // Keep initial branch list as fallback on error
+      showSnackbar("Failed to deploy tenant", SnackbarEnum.Danger);
+    },
+  });
 
+  //remove ongoing tenant from deploying
+  const DeleteBulkDeploymentDataApi = useMutation({
+    mutationFn: (sendData: Record<string, any>) => {
+      return makeRequest<any>({
+        endpoint: ApiConstants.DeleteBulkDeploymentData,
+        method: HttpMethodApi.Delete,
+        data: sendData,
+        withoutBaseModel: true,
+      }); // API Call
+    },
+    onMutate(variables) {
+      setCancelButtonLoading(true);
+    },
+    onSettled(data, error, variables, context) {
+      setCancelButtonLoading(false);
+    },
+    onSuccess(data, variables, context) {
+      refreshData();
+      setOnGoingTenants(0);
+    },
+    onError() {
+      // Keep initial branch list as fallback on error
+      showSnackbar("Failed to deploy tenant", SnackbarEnum.Danger);
+    },
+  });
   return (
     <>
       {latestReleaseVersion == tenantReleaseVersion && (
         <div className="flex items-center justify-end gap-4">
+          {onGoingTenants > 1 ? (
+            <CustomButton
+              startContent={<ReactIcons.Play />}
+              className="bg-focus"
+              onClick={handleCancelAllDeployments}
+            >
+              {t("CancelFurther")} ({onGoingTenants})
+            </CustomButton>
+          ) : (
+            tableSelection.length > 1 && (
+              <CustomButton
+                startContent={<ReactIcons.Play />}
+                className="bg-focus"
+                onClick={handleMultipleDeployClick}
+              >
+                {t("Deploy")} ({tableSelection.length})
+              </CustomButton>
+            )
+          )}
           <CustomModal
             trigger={
               <CustomButton
@@ -364,18 +447,10 @@ const TenantReleaseTable = ({
               );
             }}
           />
-          {tableSelection.length > 1 && (
-            <CustomButton
-              startContent={<ReactIcons.Play />}
-              className="bg-focus"
-              onClick={handleMultipleDeployClick}
-            >
-              {t("Deploy")} ({tableSelection.length})
-            </CustomButton>
-          )}
         </div>
       )}
       <CustomTable
+        key={onGoingTenants}
         columns={tableHeader}
         data={tenantReleaseData}
         rowKey="id"
