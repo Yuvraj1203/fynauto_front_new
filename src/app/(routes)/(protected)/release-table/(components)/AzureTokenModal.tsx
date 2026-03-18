@@ -194,6 +194,10 @@ const AzureTokenModal = ({
     },
     onSuccess(data, variables, context) {
       handleClose();
+      onSuccess({
+        android: selectedOS.includes("android"),
+        ios: selectedOS.includes("ios"),
+      });
     },
     onError() {
       // Keep initial branch list as fallback on error

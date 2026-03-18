@@ -338,6 +338,7 @@ const TenantReleaseTable = ({
                   color={CustomColor.success}
                   variant={ButtonVariant.light}
                   isDisabled={!isDeployAvailable || onGoingTenants > 0}
+                  onClick={() => isDeployAvailable && handleDeployClick(item)}
                 >
                   {t("Live")}
                 </CustomButton>
