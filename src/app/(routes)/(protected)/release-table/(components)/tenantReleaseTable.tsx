@@ -101,8 +101,7 @@ const TenantReleaseTable = ({
     const deployableItems = tenantReleaseData.filter(
       (item) =>
         tableSelection.includes(String(item.id)) &&
-        (item.status === TenantReleaseStatusEnum.Pending ||
-          item.status === TenantReleaseStatusEnum.Failed),
+        item.status !== TenantReleaseStatusEnum.Ongoing,
     );
 
     if (deployableItems.length > 0) {
