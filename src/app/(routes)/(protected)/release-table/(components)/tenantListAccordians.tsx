@@ -38,6 +38,8 @@ export type TenantReleaseDataType = {
   id: number;
   name: string;
   status: TenantReleaseStatusEnum;
+  androidStatus: TenantReleaseStatusEnum;
+  iosStatus: TenantReleaseStatusEnum;
   androidVersion: string;
   iosVersion: string;
   matchBranch: string;

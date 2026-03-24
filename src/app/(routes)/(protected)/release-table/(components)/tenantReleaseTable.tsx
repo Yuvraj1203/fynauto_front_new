@@ -1,5 +1,6 @@
 "use client";
 
+import { Text, TextVariant } from "@/components/common";
 import {
   ButtonVariant,
   ChipVariant,
@@ -13,11 +14,10 @@ import { ReactIcons } from "@/public";
 import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
 import { CustomColor, CustomSize } from "@/services/types";
-import { useGitCredStore } from "@/store/zustandStore";
 import { showSnackbar, SnackbarEnum } from "@/utils/utils";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AddTenantModal from "./AddTenantModal";
 import AzureTokenModal from "./AzureTokenModal";
 import {
@@ -74,13 +74,8 @@ const TenantReleaseTable = ({
     android: false,
     ios: false,
   });
-  const [isDeployAvailable, setIsDeployAvailable] = useState(true);
-  const manualRefetch = useRef(false);
-  const initialRender = useRef(true);
   const [cancelButtonLoading, setCancelButtonLoading] = useState(false);
   const [onGoingTenants, setOnGoingTenants] = useState<number>(0);
-
-  const azureBearerToken = useGitCredStore().azureBearer;
 
   const handleDeployClick = (item: TenantReleaseDataType) => {
     setSelectedTenants([item]);
@@ -90,7 +85,6 @@ const TenantReleaseTable = ({
   useEffect(() => {
     if (!isModalOpen) {
       refreshData();
-      refetch();
       DeploymentDataAvailableApi.mutate({});
       setTableSelection([]);
     }
@@ -128,21 +122,6 @@ const TenantReleaseTable = ({
     console.log("Deployment triggered for OS - ", { android, ios });
     // Optionally trigger a refresh or show success message
     setSelectedOS({ android, ios });
-    manualRefetch.current = true; // mark manual call
-
-    setIsDeployAvailable(false);
-    UpdateTenantStatusApi.mutate({
-      data: {
-        name: selectedTenants[0].name,
-        status: TenantReleaseStatusEnum.Ongoing,
-        android: android,
-        ios: ios,
-      },
-      param: {
-        version: tenantReleaseVersion,
-      },
-    });
-    refetch();
     setTableSelection([]);
   };
 
@@ -152,131 +131,6 @@ const TenantReleaseTable = ({
     | TenantReleaseDataType[] => {
     return selectedTenants.length === 1 ? selectedTenants[0] : selectedTenants;
   };
-
-  // Check if there are any deployable items in selection
-  const hasDeployableSelection = () => {
-    return tenantReleaseData.some(
-      (item) =>
-        tableSelection.includes(String(item.id)) &&
-        (item.status === TenantReleaseStatusEnum.Pending ||
-          item.status === TenantReleaseStatusEnum.Failed),
-    );
-  };
-
-  // Get count of deployable items
-  const getDeployableCount = () => {
-    return tenantReleaseData.filter(
-      (item) =>
-        tableSelection.includes(String(item.id)) &&
-        (item.status === TenantReleaseStatusEnum.Pending ||
-          item.status === TenantReleaseStatusEnum.Failed),
-    ).length;
-  };
-
-  //polling
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ["GetProgress"],
-    queryFn: (sendData: Record<string, any>) =>
-      makeRequest<any>({
-        endpoint: ApiConstants.GetProgress,
-        method: HttpMethodApi.Get,
-        data: { token: azureBearerToken },
-        withoutBaseModel: true,
-      }),
-    refetchInterval: (data) => {
-      if (data?.state?.data?.result?.status === AzureStatusEnum.InProgress) {
-        return 1000 * 60 * 3; // 3 minutes
-      } else {
-        return false;
-      }
-    },
-  });
-
-  const UpdateTenantStatusApi = useMutation({
-    mutationFn: (sendData: {
-      data: Record<string, any>;
-      param: Record<string, any>;
-    }) => {
-      return makeRequest<any>({
-        endpoint: ApiConstants.UpdateTenantStatus,
-        method: HttpMethodApi.Put,
-        data: sendData.data,
-        params: sendData.param,
-      }); // API Call
-    },
-    onMutate(variables) {
-      // setLoading(true);
-    },
-    onSettled(data, error, variables, context) {
-      // setLoading(false);
-    },
-    onSuccess(data, variables, context) {
-      if (data.success) {
-        showSnackbar(
-          "Tenant status updated successfully",
-          SnackbarEnum.Success,
-        );
-      }
-      if (manualRefetch.current) {
-        refetch();
-      }
-      refreshData();
-    },
-    onError(error, variables, context) {
-      // showSnackbar("Failed to update tenant status", SnackbarEnum.Danger);
-    },
-  });
-
-  useEffect(() => {
-    DeploymentDataAvailableApi.mutate({});
-    if (!data?.result) return;
-
-    const isManual = manualRefetch.current;
-
-    if (data?.result) {
-      if (data.result?.status === AzureStatusEnum.Succeeded) {
-        // update statius for success
-        UpdateTenantStatusApi.mutate({
-          data: {
-            name: data.result.tenant,
-            status: TenantReleaseStatusEnum.Published,
-            android: selectedOs.android,
-            ios: selectedOs.ios,
-          },
-          param: {
-            version: tenantReleaseVersion,
-          },
-        });
-        setSelectedOS({ android: false, ios: false });
-        setIsDeployAvailable(true);
-        if (!initialRender.current) {
-          refreshData();
-        }
-      } else if (data.result?.status === AzureStatusEnum.Failed) {
-        // update status for failed
-        UpdateTenantStatusApi.mutate({
-          data: {
-            name: data.result.tenant,
-            status: TenantReleaseStatusEnum.Failed,
-            android: false,
-            ios: false,
-          },
-          param: {
-            version: tenantReleaseVersion,
-          },
-        });
-        setIsDeployAvailable(true);
-        if (!initialRender.current) {
-          refreshData();
-        }
-      } else if (data.result?.status === AzureStatusEnum.InProgress) {
-        setIsDeployAvailable(false);
-      }
-    }
-    // reset flag after handling
-    manualRefetch.current = false;
-    initialRender.current = false;
-  }, [data]);
 
   //dynamic and customize cell rendering
   const renderCustomCell = useCallback(
@@ -299,16 +153,43 @@ const TenantReleaseTable = ({
               }
             </CustomChip>
           );
+
+        case "androidVersion":
+        case "iosVersion":
+          const osStatus =
+            columnKey === "androidVersion"
+              ? item.androidStatus
+              : item.iosStatus;
+
+          console.log("osStatus", osStatus);
+          return (
+            <div className="flex items-center gap-2 font-semibold text-nowrap">
+              <Text variant={TextVariant.caption}>{cellValue}</Text>
+              <CustomChip
+                className="capitalize"
+                color={statusColorMap[osStatus]}
+                size={CustomSize.sm}
+                variant={ChipVariant.Flat}
+              >
+                {
+                  TenantReleaseStatusEnumLabel[
+                    osStatus as TenantReleaseStatusEnum
+                  ]
+                }
+              </CustomChip>
+            </div>
+          );
         case "id":
           switch (item.status) {
             case TenantReleaseStatusEnum.Pending:
+              console.log("item.status - ", item.status);
               console.log("onGoingTenants - ", onGoingTenants);
               return (
                 <CustomButton
                   startContent={<ReactIcons.Play />}
                   className="bg-focus"
-                  isDisabled={!isDeployAvailable || onGoingTenants > 0}
-                  onClick={() => isDeployAvailable && handleDeployClick(item)}
+                  isDisabled={onGoingTenants > 0}
+                  onClick={() => handleDeployClick(item)}
                 >
                   {t("Deploy")}
                 </CustomButton>
@@ -324,7 +205,7 @@ const TenantReleaseTable = ({
                 <CustomButton
                   color={CustomColor.danger}
                   startContent={<ReactIcons.Refresh />}
-                  isDisabled={!isDeployAvailable || onGoingTenants > 0}
+                  isDisabled={onGoingTenants > 0}
                   onClick={() => handleDeployClick(item)}
                 >
                   {t("Retry")}
@@ -336,8 +217,8 @@ const TenantReleaseTable = ({
                   startContent={<ReactIcons.TickCircle />}
                   color={CustomColor.success}
                   variant={ButtonVariant.light}
-                  isDisabled={!isDeployAvailable || onGoingTenants > 0}
-                  onClick={() => isDeployAvailable && handleDeployClick(item)}
+                  isDisabled={onGoingTenants > 0}
+                  onClick={() => handleDeployClick(item)}
                 >
                   {t("Live")}
                 </CustomButton>
@@ -411,8 +292,9 @@ const TenantReleaseTable = ({
               startContent={<ReactIcons.Play />}
               className="bg-focus"
               onClick={handleCancelAllDeployments}
+              loading={cancelButtonLoading}
             >
-              {t("CancelFurther")} ({onGoingTenants})
+              {t("CancelFurther")} ({onGoingTenants - 1})
             </CustomButton>
           ) : (
             tableSelection.length > 1 && (

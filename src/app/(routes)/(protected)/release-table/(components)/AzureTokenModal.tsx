@@ -19,10 +19,7 @@ import { useGitCredStore } from "@/store/zustandStore";
 import { checkHasValidDate, showSnackbar, SnackbarEnum } from "@/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import {
-  TenantReleaseDataType,
-  TenantReleaseStatusEnum,
-} from "./tenantListAccordians";
+import { TenantReleaseDataType } from "./tenantListAccordians";
 
 type AzureTokenModalProps = {
   isOpen: boolean;
@@ -205,37 +202,6 @@ const AzureTokenModal = ({
     },
   });
 
-  // Update tenant status API - called when deploy is clicked to increment version
-  const UpdateTenantStatusApi = useMutation({
-    mutationFn: (sendData: {
-      name: string;
-      status: number;
-      android: boolean;
-      ios: boolean;
-      version: string;
-    }) => {
-      return makeRequest<any>({
-        endpoint: ApiConstants.UpdateTenantStatus,
-        method: HttpMethodApi.Put,
-        data: {
-          name: sendData.name,
-          status: sendData.status,
-          android: sendData.android,
-          ios: sendData.ios,
-        },
-        params: { version: sendData.version },
-      }); // API Call
-    },
-    onSuccess(data, variables, context) {
-      if (data.success) {
-        console.log("Tenant status updated to InProgress, version incremented");
-      }
-    },
-    onError(error, variables, context) {
-      console.error("Failed to update tenant status", error);
-    },
-  });
-
   const handleRun = async () => {
     // Validation
     if (!azureGitToken.trim()) {
@@ -302,14 +268,6 @@ const AzureTokenModal = ({
           // Get current version from tenant data
           const currentVersion =
             tenant.androidVersion || tenant.iosVersion || "1.0.0";
-
-          UpdateTenantStatusApi.mutate({
-            name: tenant.name,
-            status: TenantReleaseStatusEnum.Ongoing,
-            android: selectedOS.includes("android"),
-            ios: selectedOS.includes("ios"),
-            version: currentVersion,
-          });
 
           const jsonData = {
             body: {
