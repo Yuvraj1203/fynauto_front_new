@@ -92,6 +92,17 @@ const TenantReleaseTable = ({
 
   const handleMultipleDeployClick = () => {
     // Filter selected items that are in Pending or Failed status
+    const ongoingItems = tenantReleaseData.filter(
+      (item) =>
+        tableSelection.includes(String(item.id)) &&
+        item.status === TenantReleaseStatusEnum.Ongoing,
+    );
+
+    if (ongoingItems.length > 0) {
+      showSnackbar(t("OngoingDeployment"), SnackbarEnum.Warning, 2000);
+      return;
+    }
+
     const deployableItems = tenantReleaseData.filter(
       (item) =>
         tableSelection.includes(String(item.id)) &&
@@ -161,7 +172,6 @@ const TenantReleaseTable = ({
               ? item.androidStatus
               : item.iosStatus;
 
-          console.log("osStatus", osStatus);
           return (
             <div className="flex items-center gap-2 font-semibold text-nowrap">
               <Text variant={TextVariant.caption}>{cellValue}</Text>
@@ -180,10 +190,19 @@ const TenantReleaseTable = ({
             </div>
           );
         case "id":
+          if (latestReleaseVersion !== tenantReleaseVersion) {
+            return (
+              <CustomButton
+                startContent={<ReactIcons.Play />}
+                className="bg-focus"
+                isDisabled={true}
+              >
+                {t("Deploy")}
+              </CustomButton>
+            );
+          }
           switch (item.status) {
             case TenantReleaseStatusEnum.Pending:
-              console.log("item.status - ", item.status);
-              console.log("onGoingTenants - ", onGoingTenants);
               return (
                 <CustomButton
                   startContent={<ReactIcons.Play />}

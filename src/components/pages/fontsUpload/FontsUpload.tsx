@@ -99,10 +99,6 @@ const FontsUpload = ({ handleProceed }: FontsUploadProps) => {
   };
 
   useEffect(() => {
-    console.log(
-      tenantDataStore.fontsData.files,
-      "tenantDataStore.fontsData.files",
-    );
     tenantDataStore.fontsData.files?.map((item) => {
       if (item.name?.includes("light")) {
         setLightFontFile([item]);

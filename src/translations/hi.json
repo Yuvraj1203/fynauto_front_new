@@ -166,5 +166,6 @@
   "Deploying": "तैनाती...",
   "Retry": "पुन: प्रयास करें",
   "Live": "रहना",
-  "CancelFurther": "आगे रद्द करें"
+  "CancelFurther": "आगे रद्द करें",
+  "OngoingDeployment": "परिनियोजन अनुपलब्ध है"
 }

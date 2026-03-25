@@ -2,6 +2,7 @@
 
 import { Text, TextVariant } from "@/components/common";
 import {
+  ButtonType,
   ButtonVariant,
   CustomButton,
   FormTextInput,
@@ -104,7 +105,6 @@ const AddTenantModal = ({
   };
 
   const onSubmit = (data: AddCustomTenantType) => {
-
     AddCustomTenantApi.mutate({
       body: data,
       param: {
@@ -227,7 +227,7 @@ const AddTenantModal = ({
               displayKey={"label"}
               selectItems={teamDropdown}
               selectedValue={selectedTeam}
-              isRequired={true}
+              isRequired={false}
               handleSelectItemChange={handleSelectTeamChange}
             />
             {bearerTokenError && (
@@ -262,6 +262,7 @@ const AddTenantModal = ({
               Cancel
             </CustomButton>
             <CustomButton
+              type={ButtonType.submit}
               onClick={() => onSubmit(methods.getValues())}
               loading={loading}
             >

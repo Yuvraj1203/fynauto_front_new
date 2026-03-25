@@ -166,5 +166,6 @@
   "Deploying": "Deploying...",
   "Retry": "Retry",
   "Live": "Live",
-  "CancelFurther": "Cancel Further"
+  "CancelFurther": "Cancel Further",
+  "OngoingDeployment": "Deployment is unavailable"
 }
