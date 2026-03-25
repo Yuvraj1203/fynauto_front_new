@@ -49,7 +49,10 @@ const ConfirmationModal = ({
             </div>
           )}
           {description && (
-            <Text variant={TextVariant.body} className="text-secondary-text">
+            <Text
+              variant={TextVariant.bodySm}
+              className="text-secondary-text font-medium"
+            >
               {description}
             </Text>
           )}
