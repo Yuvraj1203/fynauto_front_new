@@ -4,6 +4,7 @@ import { Text, TextVariant } from "@/components/common";
 import {
   ButtonVariant,
   ChipVariant,
+  ConfirmationModal,
   CustomButton,
   CustomChip,
   CustomModal,
@@ -76,6 +77,11 @@ const TenantReleaseTable = ({
   });
   const [cancelButtonLoading, setCancelButtonLoading] = useState(false);
   const [onGoingTenants, setOnGoingTenants] = useState<number>(0);
+
+  const [confirmLiveDeploymentOpen, setConfirmLiveDeploymentOpen] =
+    useState(false);
+  const [pendingLiveItem, setPendingLiveItem] =
+    useState<TenantReleaseDataType | null>(null);
 
   const handleDeployClick = (item: TenantReleaseDataType) => {
     setSelectedTenants([item]);
@@ -237,7 +243,10 @@ const TenantReleaseTable = ({
                   color={CustomColor.success}
                   variant={ButtonVariant.light}
                   isDisabled={onGoingTenants > 0}
-                  onClick={() => handleDeployClick(item)}
+                  onClick={() => {
+                    setPendingLiveItem(item);
+                    setConfirmLiveDeploymentOpen(true);
+                  }}
                 >
                   {t("Live")}
                 </CustomButton>
@@ -368,6 +377,22 @@ const TenantReleaseTable = ({
           onClose={handleModalClose}
           tenants={getSelectedTenants()}
           onSuccess={handleSuccess}
+        />
+      )}
+      {confirmLiveDeploymentOpen && pendingLiveItem && (
+        <ConfirmationModal
+          state={confirmLiveDeploymentOpen}
+          title="Confirm Redeployment"
+          description="The tenant is already published and live. This will redeploy the latest release. Do you want to proceed?"
+          onCancel={() => {
+            setConfirmLiveDeploymentOpen(false);
+            setPendingLiveItem(null);
+          }}
+          onSuccess={() => {
+            setConfirmLiveDeploymentOpen(false);
+            setPendingLiveItem(null);
+            if (pendingLiveItem) handleDeployClick(pendingLiveItem);
+          }}
         />
       )}
     </>
