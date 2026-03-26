@@ -11,6 +11,7 @@ import {
   CustomTable,
   TableSelectionModeEnum,
 } from "@/components/custom";
+import { NEXT_PUBLIC_API_WS_URL } from "@/config/environment";
 import { ReactIcons } from "@/public";
 import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
@@ -87,6 +88,27 @@ const TenantReleaseTable = ({
     setSelectedTenants([item]);
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    const ws = new WebSocket(`${NEXT_PUBLIC_API_WS_URL}ws`);
+
+    ws.onopen = () => {
+      console.log("Connected to websocket");
+    };
+
+    ws.onmessage = (event) => {
+      console.log("Message:", event.data);
+      if (event.data === "tennat_deployed") {
+        refreshData();
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket closed");
+    };
+
+    return () => ws.close();
+  }, []);
 
   useEffect(() => {
     if (!isModalOpen) {

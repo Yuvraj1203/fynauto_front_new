@@ -2,3 +2,4 @@ export const NEXT_PUBLIC_ENV_NAME = process.env.NEXT_PUBLIC_ENV_NAME;
 export const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const NEXT_PUBLIC_API_SERVER_URL =
   process.env.NEXT_PUBLIC_API_SERVER_URL;
+export const NEXT_PUBLIC_API_WS_URL = process.env.NEXT_PUBLIC_API_WS_URL;
