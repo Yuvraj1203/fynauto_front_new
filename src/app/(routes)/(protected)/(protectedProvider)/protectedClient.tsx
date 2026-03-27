@@ -1,6 +1,6 @@
 "use client";
 
-import { UserDetailsType } from "@/services/models";
+import { UserDetailsType, UserRoleEnum } from "@/services/models";
 import { userDetailsStore } from "@/store/zustandStore";
 import { SessionData } from "@auth0/nextjs-auth0/types";
 import { jwtDecode, JwtPayload } from "jwt-decode";
@@ -25,7 +25,7 @@ const ProtectedClient = ({ session }: ProtectedClientProps) => {
 
     const user: UserDetailsType = {
       ...session.user,
-      userRole: decoded.userRole.at(0),
+      userRole: decoded.userRole.at(0) as UserRoleEnum,
     };
 
     if (

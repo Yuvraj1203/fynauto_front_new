@@ -1,8 +1,14 @@
-export enum UserRoleEnum {
+export enum UserRoleOldEnum {
   admin = "Admin",
   uatcreator = "UATCreator",
   devcreator = "DEVCreator",
   viewer = "Viewer",
+}
+
+export enum UserRoleEnum {
+  Admin = "Admin",
+  Dev = "Dev",
+  User = "User",
 }
 
 export type UserType = {
@@ -14,7 +20,7 @@ export type UserType = {
 };
 
 export type UserDetailsType = {
-  userRole?: string;
+  userRole?: UserRoleEnum;
   sub?: string;
   name?: string;
   nickname?: string;

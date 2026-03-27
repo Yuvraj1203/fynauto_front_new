@@ -1,6 +1,6 @@
 "use client";
 import { TenantStatusEnum } from "@/services/models/getTenantIdByNameModel/getTenantIdByNameModel";
-import { UserRoleEnum } from "@/services/models/loginModel/loginModel";
+import { UserRoleOldEnum } from "@/services/models/loginModel/loginModel";
 import { useCurrentTenantInfoStore, useUserStore } from "@/store/zustandStore";
 import { Button } from "@heroui/react";
 import { ReactNode, useEffect, useState } from "react";
@@ -66,7 +66,7 @@ const ProceedButton = ({
 
   return (
     <>
-      {userStore.role !== UserRoleEnum.viewer && (
+      {userStore.role !== UserRoleOldEnum.viewer && (
         <div
           className={` bg-surface border-t-1 border-default-100 px-5 py-4 sticky z-10 bottom-0 left-0 right-0 rounded-2xl ${className}`}
         >

@@ -6,7 +6,7 @@ import { FormTextInput, FormTextInputType } from "@/components/custom";
 import { ApiConstants } from "@/services/apiConstants";
 import { HttpMethodApi, makeRequest } from "@/services/apiInstance";
 import { SetTenantInfoModel } from "@/services/models";
-import { UserRoleEnum } from "@/services/models/loginModel/loginModel";
+import { UserRoleOldEnum } from "@/services/models/loginModel/loginModel";
 import {
   useGitCredStore,
   useTenantDataStore,
@@ -186,12 +186,12 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
   };
 
   const onSubmit = (data: FormSchema) => {
-    if (userStore.role == UserRoleEnum.viewer) {
+    if (userStore.role == UserRoleOldEnum.viewer) {
       showSnackbar(
         "You dont have creating tenant permissions!",
         SnackbarEnum.Warning,
       );
-    } else if (userStore.role == UserRoleEnum.devcreator) {
+    } else if (userStore.role == UserRoleOldEnum.devcreator) {
       if (
         selectedEnvironment?.key == EnvKeyEnum.uat ||
         selectedEnvironment?.key == EnvKeyEnum.prod
@@ -203,7 +203,7 @@ const TenantInfoForm = ({ handleProceed, uiLoading }: TenantInfoFormProps) => {
       } else {
         SetTenantInfoApi.mutate(data);
       }
-    } else if (userStore.role == UserRoleEnum.uatcreator) {
+    } else if (userStore.role == UserRoleOldEnum.uatcreator) {
       if (selectedEnvironment?.key == EnvKeyEnum.prod) {
         showSnackbar(
           "You can not create tenant for prod environment, please select other than prod in environment!",

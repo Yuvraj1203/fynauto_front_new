@@ -1,6 +1,7 @@
 export { type BaseModel, type ErrorBaseModel } from "./baseModel/baseModel";
 export { type GetTenantIdByNameModel } from "./getTenantIdByNameModel/getTenantIdByNameModel";
 export {
+  UserRoleEnum,
   type LoginModel,
   type UserDetailsType,
   type UserType,
