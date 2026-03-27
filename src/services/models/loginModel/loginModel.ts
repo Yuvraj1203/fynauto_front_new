@@ -13,6 +13,19 @@ export type UserType = {
   refreshToken?: string;
 };
 
+export type UserDetailsType = {
+  userRole?: string;
+  sub?: string;
+  name?: string;
+  nickname?: string;
+  given_name?: string;
+  family_name?: string;
+  picture?: string;
+  email?: string;
+  email_verified?: boolean;
+  org_id?: string;
+};
+
 export type LoginModel = {
   accessToken: string;
   refreshToken?: string;

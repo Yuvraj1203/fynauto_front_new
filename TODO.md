@@ -1,17 +1,11 @@
-# Confirmation Modal Implementation
+# Fix ProtectedClient and UserDetailStore Issues
 
 ## Steps:
 
-- [ ] 1. Create `src/components/custom/confirmationModal/confirmationModal.tsx` - Reusable ConfirmationModal component using CustomModal.
-- [ ] 2. Export ConfirmationModal from `src/components/custom/index.tsx`.
-- [x] 3. Update `src/app/(routes)/(protected)/release-table/(components)/tenantReleaseTable.tsx` - Add state, import, intercept Live button with ConfirmationModal.
-- [ ] 4. Test integration.
+- [x] 1. Update userDetailStore.tsx: Add `isInitialized` flag to prevent multiple sets during hydration.
+- [x] 2. Update protectedClient.tsx: Fix useEffect deps, use `isInitialized` and ref to avoid infinite loop, duplicate saves, SSR warnings, hook errors. Full rewrite for stability.
+- [ ] 3. Test: Navigate to protected routes, check console for loops, verify Network tab no duplicate user save APIs.
+- [ ] 4. Update this TODO.md as complete.
+- [ ] 5. Complete task.
 
-All steps complete. Task done - ConfirmationModal created and integrated for live tenant redeployment confirmation.
-
-To test:
-
-1. Run `npm run dev` (if not running)
-2. Navigate to release-table page
-3. Find a Published/Live tenant, click \"Live\" button
-4. Confirmation modal appears, confirm to open AzureTokenModal and proceed with deployment as before.
+Current: Edits complete. Test manually by running dev server and navigating to protected pages (e.g. dashboard). Check console/Network for issues.
