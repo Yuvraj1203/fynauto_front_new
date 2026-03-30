@@ -167,5 +167,6 @@
   "Retry": "पुन: प्रयास करें",
   "Live": "रहना",
   "CancelFurther": "आगे रद्द करें",
-  "OngoingDeployment": "परिनियोजन अनुपलब्ध है"
+  "OngoingDeployment": "परिनियोजन अनुपलब्ध है",
+  "CreateUser": "उपयोगकर्ता बनाएं"
 }

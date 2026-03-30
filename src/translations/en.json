@@ -167,5 +167,6 @@
   "Retry": "Retry",
   "Live": "Live",
   "CancelFurther": "Cancel Further",
-  "OngoingDeployment": "Deployment is unavailable"
+  "OngoingDeployment": "Deployment is unavailable",
+  "CreateUser": "Create User"
 }

@@ -57,9 +57,9 @@ const CustomSelect = <T extends object, V extends Primitive = string>({
   placeholder,
   label,
   labelPlacement = LabelPlacementEnum.outsideTop,
-  triggerStyle = "bg-surface border-default-200 border-1 bg-componentBg",
+  triggerStyle = " border-default-200 border-1 bg-componentBg",
   itemClassName = "capitalize font-medium",
-  labelStyle = "capitalize subpixel-antialiased text-sm text-primary-text mb-2 text-nowrap",
+  labelStyle = "capitalize subpixel-antialiased text-sm text-primary-text  text-nowrap font-semibold",
   baseStyle = "",
   ...props
 }: CustomSelectProps<T, V>) => {
@@ -68,15 +68,15 @@ const CustomSelect = <T extends object, V extends Primitive = string>({
     value === undefined
       ? undefined
       : Array.isArray(value)
-      ? value.map(String)
-      : [String(value)];
+        ? value.map(String)
+        : [String(value)];
 
   const defaultSelectedKeys =
     defaultValue === undefined
       ? undefined
       : Array.isArray(defaultValue)
-      ? defaultValue.map(String)
-      : [String(defaultValue)];
+        ? defaultValue.map(String)
+        : [String(defaultValue)];
 
   const isNumberValue =
     typeof value === "number" ||
@@ -99,6 +99,7 @@ const CustomSelect = <T extends object, V extends Primitive = string>({
         classNames={{
           trigger: triggerStyle,
           base: baseStyle,
+          label: labelStyle,
         }}
         size={props.size}
         radius={props.radius}
@@ -106,13 +107,13 @@ const CustomSelect = <T extends object, V extends Primitive = string>({
           const keys = Array.from(selection);
 
           const parsedValues = keys.map((k) =>
-            isNumberValue ? (Number(k) as V) : (String(k) as V)
+            isNumberValue ? (Number(k) as V) : (String(k) as V),
           );
 
           onChange(
             selectionMode === SelectionModeEnum.multiple
               ? parsedValues
-              : parsedValues[0]
+              : parsedValues[0],
           );
         }}
       >
